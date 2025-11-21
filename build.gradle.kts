@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "1.9.22"
     `maven-publish`
     `java-library`
+    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
 }
 
 group = "co.ke.tinker"
@@ -30,6 +31,27 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
+
+ktlint {
+    version.set("0.50.0")
+    debug.set(false)
+    verbose.set(true)
+    android.set(false)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+    enableExperimentalRules.set(true)
+    filter {
+        exclude("**/generated/**")
+        exclude("**/build/**")
+    }
+}
+
+tasks.named("check") {
+    dependsOn("ktlintCheck")
 }
 
 tasks.compileKotlin {
