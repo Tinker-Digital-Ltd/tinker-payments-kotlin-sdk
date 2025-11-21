@@ -1,7 +1,7 @@
 package co.ke.tinker.config
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Assertions.*
 
 class ConfigurationTest {
     @Test
@@ -20,4 +20,5 @@ class ConfigurationTest {
         assertEquals("sk_test_456", config.apiKey)
     }
 }
+
 

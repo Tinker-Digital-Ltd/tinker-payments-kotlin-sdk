@@ -4,8 +4,8 @@ import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.model.Transaction
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 class WebhookHandlerTest {
     private val handler = WebhookHandler()
@@ -121,4 +121,5 @@ class WebhookHandlerTest {
         assertNull(transaction)
     }
 }
+
 

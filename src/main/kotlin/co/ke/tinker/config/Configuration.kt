@@ -5,8 +5,9 @@ class Configuration(
     val apiSecretKey: String
 ) {
     val baseUrl: String = "${Endpoints.API_BASE_URL}/"
-    
+
     val apiKey: String
         get() = apiSecretKey
 }
+
 

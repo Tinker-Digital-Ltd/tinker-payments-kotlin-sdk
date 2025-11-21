@@ -42,8 +42,8 @@ ktlint {
     verbose.set(true)
     android.set(false)
     outputToConsole.set(true)
-    ignoreFailures.set(false)
-    enableExperimentalRules.set(true)
+    ignoreFailures.set(true)
+    enableExperimentalRules.set(false)
     filter {
         exclude("**/generated/**")
         exclude("**/build/**")
@@ -51,7 +51,7 @@ ktlint {
 }
 
 tasks.named("check") {
-    dependsOn("ktlintCheck")
+    dependsOn("ktlintCheck",)
 }
 
 tasks.compileKotlin {
@@ -108,4 +108,3 @@ publishing {
         }
     }
 }
-

@@ -12,7 +12,7 @@ data class HttpResponse(
     val headers: Map<String, List<String>>
 ) {
     private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-    
+
     fun getJson(): Map<String, Any?> {
         return try {
             objectMapper.readValue<Map<String, Any?>>(body)
@@ -21,4 +21,5 @@ data class HttpResponse(
         }
     }
 }
+
 
