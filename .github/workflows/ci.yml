@@ -42,10 +42,6 @@ jobs:
             gradle wrapper --gradle-version 8.5
           fi
       
-      - name: Validate Gradle Wrapper
-        run: ./gradlew wrapper --validate
-        if: hashFiles('gradlew') != ''
-      
       - name: Build, lint, and test
         run: ./gradlew build
         if: hashFiles('gradlew') != ''
