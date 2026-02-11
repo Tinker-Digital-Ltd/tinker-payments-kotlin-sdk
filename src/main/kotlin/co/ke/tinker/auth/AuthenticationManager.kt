@@ -1,12 +1,12 @@
 package co.ke.tinker.auth
 
 import co.ke.tinker.config.Configuration
-import co.ke.tinker.config.Endpoints
 import co.ke.tinker.exception.AuthenticationException
-import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.exception.ExceptionCode
+import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.http.HttpClient
 import co.ke.tinker.http.HttpResponse
+import co.ke.tinker.model.ApiMeta
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -17,6 +17,8 @@ class AuthenticationManager(
 ) {
     private var token: String? = null
     private var expiresAt: Long? = null
+    var lastMeta: ApiMeta? = null
+        private set
 
     fun getToken(): String {
         if (isTokenValid()) {
@@ -36,52 +38,55 @@ class AuthenticationManager(
     private fun fetchToken(): String {
         try {
             val credentials = "${config.apiPublicKey}:${config.apiSecretKey}"
-            val encodedCredentials = Base64.getEncoder().encodeToString(
-                credentials.toByteArray(StandardCharsets.UTF_8)
-            )
+            val encodedCredentials = Base64.getEncoder().encodeToString(credentials.toByteArray(StandardCharsets.UTF_8))
 
-            val url = Endpoints.AUTH_TOKEN_URL
             val headers = mapOf(
                 "Content-Type" to "application/x-www-form-urlencoded",
                 "Accept" to "application/json"
             )
-
             val body = "credentials=${URLEncoder.encode(encodedCredentials, StandardCharsets.UTF_8.name())}"
-
-            val response: HttpResponse = httpClient.post(url, headers, body)
+            val response: HttpResponse = httpClient.post(config.authUrl, headers, body)
             val result = response.getJson()
+            val authData = extractAuthData(result)
 
             if (response.statusCode >= 400) {
-                val message = result["message"] as? String ?: "Authentication failed"
-                throw AuthenticationException(message, ExceptionCode.AUTHENTICATION_ERROR)
+                throw AuthenticationException(extractErrorMessage(result), ExceptionCode.AUTHENTICATION_ERROR)
             }
 
-            val tokenValue = result["token"] as? String
+            val tokenValue = authData["token"] as? String
             if (tokenValue == null) {
-                throw NetworkException(
-                    "Invalid authentication response: token missing",
-                    ExceptionCode.AUTHENTICATION_ERROR
-                )
+                throw NetworkException("Invalid authentication response: token missing", ExceptionCode.AUTHENTICATION_ERROR)
             }
 
-            this.token = tokenValue
-            val expiresInObj = result["expires_in"]
-            val expiresIn = (expiresInObj as? Number)?.toInt() ?: 3600
-            this.expiresAt = (System.currentTimeMillis() / 1000) + expiresIn
-
-            return this.token!!
+            token = tokenValue
+            val expiresIn = (authData["expires_in"] as? Number)?.toInt() ?: 3600
+            expiresAt = (System.currentTimeMillis() / 1000) + expiresIn
+            return token!!
         } catch (e: AuthenticationException) {
             throw e
         } catch (e: NetworkException) {
             throw e
         } catch (e: Exception) {
-            throw NetworkException(
-                "Failed to authenticate: ${e.message}",
-                ExceptionCode.AUTHENTICATION_ERROR,
-                e
-            )
+            throw NetworkException("Failed to authenticate: ${e.message}", ExceptionCode.AUTHENTICATION_ERROR, e)
         }
     }
+
+    private fun extractAuthData(result: Map<String, Any?>): Map<String, Any?> {
+        if (result.containsKey("success")) {
+            lastMeta = ApiMeta.fromMap(result["meta"] as? Map<String, Any?>)
+            if (result["success"] == false) {
+                throw AuthenticationException(extractErrorMessage(result), ExceptionCode.AUTHENTICATION_ERROR)
+            }
+            return result["data"] as? Map<String, Any?> ?: emptyMap()
+        }
+        return result
+    }
+
+    private fun extractErrorMessage(result: Map<String, Any?>): String {
+        val errorMap = result["error"] as? Map<String, Any?>
+        if (errorMap != null) {
+            return errorMap["message"] as? String ?: errorMap["code"] as? String ?: "Authentication failed"
+        }
+        return result["message"] as? String ?: "Authentication failed"
+    }
 }
-
-

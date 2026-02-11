@@ -9,20 +9,19 @@ data class InitiationDataDto(
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): InitiationDataDto {
-            val paymentReference = data["payment_reference"] as? String
+            val paymentReference = (data["paymentReference"] ?: data["payment_reference"]) as? String
             val statusValue = data["status"] as? String ?: "pending"
             val status = PaymentStatus.fromString(statusValue)
-            val authorizationUrl = data["authorization_url"] as? String
+            val authorizationUrl = (data["authorizationUrl"] ?: data["authorization_url"]) as? String
             return InitiationDataDto(paymentReference, status, authorizationUrl)
         }
     }
-    
+
     fun toMap(): Map<String, Any?> {
         return mapOf(
-            "payment_reference" to paymentReference,
+            "paymentReference" to paymentReference,
             "status" to status.value,
-            "authorization_url" to authorizationUrl
+            "authorizationUrl" to authorizationUrl
         )
     }
 }
-
