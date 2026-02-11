@@ -8,9 +8,8 @@ data class QueryPaymentRequestDto(
 ) {
     fun toMap(): Map<String, Any?> {
         return mapOf(
-            "payment_reference" to paymentReference,
+            "reference" to paymentReference,
             "gateway" to gateway.value
         )
     }
 }
-

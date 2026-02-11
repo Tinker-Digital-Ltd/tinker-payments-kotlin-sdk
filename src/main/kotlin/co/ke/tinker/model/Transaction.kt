@@ -10,41 +10,33 @@ class Transaction(data: Map<String, Any?>) {
     val initiationData: InitiationDataDto?
     val queryData: QueryDataDto?
     val callbackData: CallbackDataDto?
-    
+
     init {
         when {
-            data.containsKey("payment_reference") && !data.containsKey("id") -> {
-                this.initiationData = InitiationDataDto.fromMap(data)
-                this.queryData = null
-                this.callbackData = null
-                this.status = this.initiationData.status
+            (data.containsKey("paymentReference") || data.containsKey("payment_reference")) && !data.containsKey("id") -> {
+                initiationData = InitiationDataDto.fromMap(data)
+                queryData = null
+                callbackData = null
+                status = initiationData.status
             }
             data.containsKey("id") && data.containsKey("reference") -> {
-                this.initiationData = null
-                this.queryData = QueryDataDto.fromMap(data)
-                this.callbackData = CallbackDataDto.fromMap(data)
-                this.status = this.queryData.status
+                initiationData = null
+                queryData = QueryDataDto.fromMap(data)
+                callbackData = CallbackDataDto.fromMap(data)
+                status = queryData.status
             }
             else -> {
-                this.initiationData = null
-                this.queryData = null
-                this.callbackData = null
+                initiationData = null
+                queryData = null
+                callbackData = null
                 val statusValue = data["status"] as? String ?: "pending"
-                this.status = PaymentStatus.fromString(statusValue)
+                status = PaymentStatus.fromString(statusValue)
             }
         }
     }
-    
-    val isSuccessful: Boolean
-        get() = status == PaymentStatus.SUCCESS
-    
-    val isPending: Boolean
-        get() = status == PaymentStatus.PENDING
-    
-    val isCancelled: Boolean
-        get() = status == PaymentStatus.CANCELLED
-    
-    val isFailed: Boolean
-        get() = status == PaymentStatus.FAILED
-}
 
+    val isSuccessful: Boolean get() = status == PaymentStatus.SUCCESS
+    val isPending: Boolean get() = status == PaymentStatus.PENDING
+    val isCancelled: Boolean get() = status == PaymentStatus.CANCELLED
+    val isFailed: Boolean get() = status == PaymentStatus.FAILED
+}
