@@ -5,6 +5,7 @@ import co.ke.tinker.config.Configuration
 import co.ke.tinker.exception.ApiException
 import co.ke.tinker.exception.ExceptionCode
 import co.ke.tinker.exception.NetworkException
+import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.http.HttpClient
 import co.ke.tinker.http.HttpResponse
 import co.ke.tinker.model.ApiMeta
@@ -45,16 +46,21 @@ abstract class BaseManager(
         } else {
             httpClient.post(url, headers, body)
         }
-        val result = response.getJson()
+        val result = try {
+            response.getJson()
+        } catch (e: InvalidPayloadException) {
+            if (response.statusCode < 400) throw e
+            emptyMap()
+        }
 
         if (response.statusCode >= 400) {
-            throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR)
+            throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
         }
 
         if (result.containsKey("success")) {
             lastMeta = ApiMeta.fromMap(result["meta"] as? Map<String, Any?>)
             if (result["success"] == false) {
-                throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR)
+                throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
             }
 
             val dataObj = result["data"]
