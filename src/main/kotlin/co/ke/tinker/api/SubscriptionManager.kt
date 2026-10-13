@@ -12,7 +12,7 @@ import java.net.URLEncoder
 class SubscriptionManager(
     config: Configuration,
     httpClient: HttpClient,
-    authManager: AuthenticationManager
+    authManager: AuthenticationManager,
 ) : BaseManager(config, httpClient, authManager) {
 
     fun createPlan(request: CreateSubscriptionPlanRequestDto): Map<String, Any?> {
@@ -41,7 +41,7 @@ class SubscriptionManager(
 
         var endpoint = Endpoints.SUBSCRIPTION_BASE_PATH
         if (query.isNotEmpty()) {
-            endpoint += "?${query.joinToString("&")}" 
+            endpoint += "?${query.joinToString("&")}"
         }
 
         val wrapped = request("GET", endpoint, null)
@@ -49,7 +49,7 @@ class SubscriptionManager(
     }
 
     fun cancel(subscriptionId: String): Map<String, Any?> {
-        return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/${subscriptionId}/cancel", null)
+        return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/$subscriptionId/cancel", null)
     }
     fun checkout(input: ManagedCheckout): Map<String, Any?> {
         return request("POST", "merchant/billing/checkout", input.toMap())

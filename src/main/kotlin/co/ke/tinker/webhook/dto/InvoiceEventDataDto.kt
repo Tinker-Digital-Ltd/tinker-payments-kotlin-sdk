@@ -8,7 +8,7 @@ data class InvoiceEventDataDto(
     val currency: String?,
     val subscriptionId: String?,
     val createdAt: String?,
-    val paidAt: String?
+    val paidAt: String?,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): InvoiceEventDataDto {
@@ -33,6 +33,6 @@ data class InvoiceEventDataDto(
         "currency" to currency,
         "subscription_id" to subscriptionId,
         "created_at" to createdAt,
-        "paid_at" to paidAt
+        "paid_at" to paidAt,
     )
 }

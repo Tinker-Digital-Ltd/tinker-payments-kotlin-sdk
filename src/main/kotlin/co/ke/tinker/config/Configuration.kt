@@ -3,7 +3,7 @@ package co.ke.tinker.config
 class Configuration(
     val apiPublicKey: String,
     val apiSecretKey: String,
-    baseUrl: String? = null
+    baseUrl: String? = null,
 ) {
     val baseUrl: String
     val authUrl: String

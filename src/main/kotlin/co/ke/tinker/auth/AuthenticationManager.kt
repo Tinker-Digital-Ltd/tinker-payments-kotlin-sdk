@@ -13,7 +13,7 @@ import java.util.Base64
 
 class AuthenticationManager(
     private val config: Configuration,
-    private val httpClient: HttpClient
+    private val httpClient: HttpClient,
 ) {
     private var token: String? = null
     private var expiresAt: Long? = null
@@ -42,7 +42,7 @@ class AuthenticationManager(
 
             val headers = mapOf(
                 "Content-Type" to "application/x-www-form-urlencoded",
-                "Accept" to "application/json"
+                "Accept" to "application/json",
             )
             val body = "credentials=${URLEncoder.encode(encodedCredentials, StandardCharsets.UTF_8.name())}"
             val response: HttpResponse = httpClient.post(config.authUrl, headers, body)

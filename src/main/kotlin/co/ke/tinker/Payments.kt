@@ -12,7 +12,7 @@ class Payments(
     apiPublicKey: String,
     apiSecretKey: String,
     httpClient: HttpClient? = null,
-    baseUrl: String? = null
+    baseUrl: String? = null,
 ) {
     private val config = Configuration(apiPublicKey, apiSecretKey, baseUrl)
     private val httpClient: HttpClient = httpClient ?: HttpClient()

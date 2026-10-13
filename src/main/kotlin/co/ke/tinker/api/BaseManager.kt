@@ -4,8 +4,8 @@ import co.ke.tinker.auth.AuthenticationManager
 import co.ke.tinker.config.Configuration
 import co.ke.tinker.exception.ApiException
 import co.ke.tinker.exception.ExceptionCode
-import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.exception.InvalidPayloadException
+import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.http.HttpClient
 import co.ke.tinker.http.HttpResponse
 import co.ke.tinker.model.ApiMeta
@@ -15,7 +15,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 abstract class BaseManager(
     protected val config: Configuration,
     protected val httpClient: HttpClient,
-    protected val authManager: AuthenticationManager
+    protected val authManager: AuthenticationManager,
 ) {
     private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     var lastMeta: ApiMeta? = null
@@ -30,7 +30,7 @@ abstract class BaseManager(
         val headers = mapOf(
             "Authorization" to "Bearer $token",
             "Accept" to "application/json",
-            "Content-Type" to "application/json"
+            "Content-Type" to "application/json",
         )
 
         val body = if (data != null && data.isNotEmpty()) {
@@ -39,7 +39,9 @@ abstract class BaseManager(
             } catch (e: Exception) {
                 throw NetworkException("Failed to serialize request data: ${e.message}", ExceptionCode.NETWORK_ERROR, e)
             }
-        } else null
+        } else {
+            null
+        }
 
         val response: HttpResponse = if (method.uppercase() == "GET") {
             httpClient.get(url, headers)

@@ -10,7 +10,7 @@ data class SubscriptionEventDataDto(
     val createdAt: String?,
     val cancelledAt: String?,
     val pausedAt: String?,
-    val reactivatedAt: String?
+    val reactivatedAt: String?,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SubscriptionEventDataDto {
@@ -39,6 +39,6 @@ data class SubscriptionEventDataDto(
         "created_at" to createdAt,
         "cancelled_at" to cancelledAt,
         "paused_at" to pausedAt,
-        "reactivated_at" to reactivatedAt
+        "reactivated_at" to reactivatedAt,
     )
 }

@@ -4,8 +4,9 @@ enum class PaymentStatus(val value: String) {
     PENDING("pending"),
     SUCCESS("success"),
     CANCELLED("cancelled"),
-    FAILED("failed");
-    
+    FAILED("failed"),
+    ;
+
     companion object {
         fun fromString(value: String?): PaymentStatus {
             if (value == null) {
@@ -18,7 +19,6 @@ enum class PaymentStatus(val value: String) {
             }
         }
     }
-    
+
     override fun toString(): String = value
 }
-

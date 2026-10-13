@@ -15,7 +15,7 @@ class InitiatePaymentRequestDtoTest {
             currency = "KES",
             gateway = Gateway.MPESA,
             merchantReference = "ORDER-123",
-            returnUrl = "https://example.com/return"
+            returnUrl = "https://example.com/return",
         )
 
         val map = dto.toMap()
@@ -33,7 +33,7 @@ class InitiatePaymentRequestDtoTest {
             gateway = Gateway.MPESA,
             merchantReference = "ORDER-123",
             returnUrl = "https://example.com/return",
-            metadata = mapOf("order_id" to "12345")
+            metadata = mapOf("order_id" to "12345"),
         )
 
         val map = dto.toMap()

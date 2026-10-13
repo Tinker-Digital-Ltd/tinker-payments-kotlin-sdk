@@ -10,7 +10,7 @@ data class PaymentEventDataDto(
     val currency: String?,
     val channel: String?,
     val createdAt: String?,
-    val paidAt: String?
+    val paidAt: String?,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): PaymentEventDataDto {
@@ -27,7 +27,7 @@ data class PaymentEventDataDto(
             return PaymentEventDataDto(id, status, reference, amount, currency, channel, createdAt, paidAt)
         }
     }
-    
+
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "id" to id,
@@ -37,8 +37,7 @@ data class PaymentEventDataDto(
             "currency" to currency,
             "channel" to channel,
             "created_at" to createdAt,
-            "paid_at" to paidAt
+            "paid_at" to paidAt,
         )
     }
 }
-

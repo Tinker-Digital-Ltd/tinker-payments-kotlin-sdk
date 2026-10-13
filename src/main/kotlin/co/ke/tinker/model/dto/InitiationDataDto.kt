@@ -5,7 +5,7 @@ import co.ke.tinker.enums.PaymentStatus
 data class InitiationDataDto(
     val paymentReference: String?,
     val status: PaymentStatus,
-    val authorizationUrl: String?
+    val authorizationUrl: String?,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): InitiationDataDto {
@@ -21,7 +21,7 @@ data class InitiationDataDto(
         return mapOf(
             "paymentReference" to paymentReference,
             "status" to status.value,
-            "authorizationUrl" to authorizationUrl
+            "authorizationUrl" to authorizationUrl,
         )
     }
 }

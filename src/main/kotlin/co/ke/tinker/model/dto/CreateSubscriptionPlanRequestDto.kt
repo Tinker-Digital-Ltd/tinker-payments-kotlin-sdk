@@ -6,7 +6,7 @@ data class CreateSubscriptionPlanRequestDto(
     val currency: String,
     val intervals: List<String>,
     val description: String = "",
-    val isActive: Boolean = true
+    val isActive: Boolean = true,
 ) {
     fun toMap(): Map<String, Any?> = mapOf(
         "name" to name,
@@ -14,6 +14,6 @@ data class CreateSubscriptionPlanRequestDto(
         "amount" to amount,
         "currency" to currency,
         "intervals" to intervals,
-        "is_active" to isActive
+        "is_active" to isActive,
     )
 }
