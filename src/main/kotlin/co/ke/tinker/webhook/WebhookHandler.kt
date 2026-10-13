@@ -57,11 +57,11 @@ class WebhookHandler {
                 "source" to event.source,
                 "timestamp" to event.timestamp,
                 "data" to event.rawData,
-                "meta" to event.rawMeta
+                "meta" to event.rawMeta,
             )
             val encoded = objectMapper.writeValueAsString(payloadWithoutSecurity)
             val computed = "sha256=${hmacSha256Hex(encoded, webhookSecret)}"
-            signature == computed
+            java.security.MessageDigest.isEqual(signature.toByteArray(StandardCharsets.UTF_8), computed.toByteArray(StandardCharsets.UTF_8))
         } catch (_: Exception) {
             false
         }

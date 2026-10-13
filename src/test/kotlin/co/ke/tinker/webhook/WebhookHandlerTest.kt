@@ -1,6 +1,7 @@
 package co.ke.tinker.webhook
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class WebhookHandlerTest {
@@ -14,7 +15,7 @@ class WebhookHandlerTest {
             "source" to "payment",
             "timestamp" to "2026-02-09T14:30:00Z",
             "data" to mapOf("reference" to "TXN-1", "status" to "success"),
-            "meta" to mapOf("app_id" to "app_123", "version" to "1.0")
+            "meta" to mapOf("app_id" to "app_123", "version" to "1.0"),
         )
 
         val secret = "test_secret"
@@ -28,5 +29,11 @@ class WebhookHandlerTest {
 
         assertTrue(event.isPaymentEvent)
         assertTrue(handler.verifySignature(event, secret))
+        assertFalse(handler.verifySignature(event, "wrong-secret"))
+        assertFalse(handler.verifySignature(event, ""))
+        val tampered = payload + mapOf("data" to mapOf("reference" to "changed"))
+        assertFalse(handler.verifySignature(handler.handle(tampered), secret))
+        val shortSignature = payload + mapOf("security" to mapOf("signature" to "sha256=1"))
+        assertFalse(handler.verifySignature(handler.handle(shortSignature), secret))
     }
 }
