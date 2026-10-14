@@ -46,7 +46,7 @@ class WebhookHandler {
         }
 
         val signature = event.security.signature
-        if (signature == null || !signature.startsWith("sha256=")) {
+        if (event.security.algorithm != "HMAC-SHA256" || !signature.startsWith("sha256=")) {
             return false
         }
 
@@ -56,10 +56,12 @@ class WebhookHandler {
                 "type" to event.type,
                 "source" to event.source,
                 "timestamp" to event.timestamp,
-                "data" to event.rawData,
-                "meta" to event.rawMeta,
+                "data" to sortMaps(event.rawData),
+                "meta" to sortMaps(event.rawMeta),
             )
             val encoded = objectMapper.writeValueAsString(payloadWithoutSecurity)
+                .replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+                .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
             val computed = "sha256=${hmacSha256Hex(encoded, webhookSecret)}"
             java.security.MessageDigest.isEqual(signature.toByteArray(StandardCharsets.UTF_8), computed.toByteArray(StandardCharsets.UTF_8))
         } catch (_: Exception) {
@@ -69,6 +71,12 @@ class WebhookHandler {
 
     fun verifySignature(payload: String, webhookSecret: String): Boolean = verifySignature(handle(payload), webhookSecret)
     fun verifySignature(payload: Map<String, Any?>, webhookSecret: String): Boolean = verifySignature(handle(payload), webhookSecret)
+
+    private fun sortMaps(value: Any?): Any? = when (value) {
+        is Map<*, *> -> value.entries.associate { (key, item) -> key.toString() to sortMaps(item) }.toSortedMap()
+        is List<*> -> value.map { sortMaps(it) }
+        else -> value
+    }
 
     private fun hmacSha256Hex(payload: String, secret: String): String {
         val mac = Mac.getInstance("HmacSHA256")
