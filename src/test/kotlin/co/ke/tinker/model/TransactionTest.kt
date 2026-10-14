@@ -1,7 +1,9 @@
 package co.ke.tinker.model
 
 import co.ke.tinker.enums.PaymentStatus
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class TransactionTest {
@@ -11,7 +13,7 @@ class TransactionTest {
         val data = mapOf(
             "paymentReference" to "TXN-123",
             "status" to "pending",
-            "authorizationUrl" to "https://example.com/auth"
+            "authorizationUrl" to "https://example.com/auth",
         )
 
         val transaction = Transaction(data)
@@ -30,7 +32,7 @@ class TransactionTest {
             "amount" to 100.0,
             "currency" to "KES",
             "created_at" to "2024-01-01T00:00:00Z",
-            "channel" to "mpesa"
+            "channel" to "mpesa",
         )
 
         val transaction = Transaction(data)

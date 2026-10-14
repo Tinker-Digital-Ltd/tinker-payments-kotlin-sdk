@@ -258,3 +258,93 @@ Bug reports and pull requests are welcome on GitHub at https://github.com/tinker
 
 MIT License
 
+
+## API errors
+
+API exceptions preserve `httpStatus`, `errorCode`, `providerCode`, `requestId`, `retryAfter`, and `outcome`.
+Request IDs prefer `error.request_id` over the `X-Request-ID` header. `Retry-After`
+is retained as its original header string. Non-JSON HTTP failures retain status and
+headers as API errors with an unknown outcome. Existing exception constructors and
+legacy code/message access remain compatible.
+
+Only an explicit `not_applied` outcome confirms no mutation. A missing outcome
+remains uncertain.
+
+## Managed recurring billing
+
+Requires a Tinker server with the managed-billing, payment-method and payment-history
+endpoints enabled. Installing the SDK does not deploy or enable those endpoints.
+Existing plan-based subscription methods remain available.
+
+Checkout uses exact integer minor-unit prices (for example, `15000` means EUR 150.00),
+an explicit recurring interval (`month` or `year`), and a quantity. The SDK does not
+convert prices or apply automatic discounts. Managed responses are unwrapped API
+data objects/maps; payment history includes `items`, `snapshot`, `has_more` and
+`next_cursor`.
+
+| Method | Purpose |
+|---|---|
+| `checkout` | Create an exact-price recurring checkout |
+| `billingResource` | Read a managed billing resource |
+| `changeQuantity` | Change the current quantity |
+| `scheduleQuantity` | Schedule a quantity change |
+| `clearScheduledQuantity` | Remove a scheduled quantity change |
+| `setCancelAtRenewal` | Set cancellation at renewal; pass false to clear it |
+| `billingOperation` | Recover the durable result by idempotency key |
+| `paymentMethodPortal` | Create a short-lived hosted payment-method link |
+| `billingPaymentHistory` | Read one page of captured payments and adjustments |
+
+```kotlin
+import co.ke.tinker.model.dto.ManagedCheckout
+import co.ke.tinker.exception.ApiException
+
+val billing = payments.subscriptions()
+billing.checkout(ManagedCheckout(
+    externalCustomerId = "workspace-123", email = "buyer@example.com", name = "Buyer",
+    currency = "EUR", unitAmount = 15000L, quantity = 3, interval = "year",
+    returnUrl = "https://example.com/billing", idempotencyKey = "checkout-123"
+))
+billing.changeQuantity("resource-id", 4, "quantity-123")
+billing.setCancelAtRenewal("resource-id", false, "resume-123")
+billing.paymentMethodPortal("resource-id", "https://example.com/billing", "portal-123")
+val page = billing.billingPaymentHistory("resource-id")
+// After an uncertain command response, recover using the SAME key:
+val operation = billing.billingOperation("quantity-123")
+// Catch ApiException and inspect error.httpStatus, error.outcome, etc.
+```
+
+`ManagedCheckout` uses `Long` for minor-unit amounts and `Int` for quantities.
+Cursor and snapshot default to an empty string and zero for the initial page.
+
+Use a stable, unique idempotency key for each mutation, and reuse it only with the
+same payload. After a timeout, retrieve the durable result with the operation lookup
+method. Missing or pending results do not prove a charge failed. Do not retry with a
+new key to work around an uncertain result. Only an explicit `outcome == "not_applied"`
+confirms no mutation; missing outcome remains uncertain. No automatic charge retry is
+performed by these methods.
+
+The payment-method portal updates payment details only. It cannot change quantity or
+price, and paying an overdue invoice is a separate action through its hosted invoice
+URL. Reuse the operation key after an uncertain response; use a new key to deliberately
+open a fresh session after expiry. The server checks app ownership and requires a
+managed subscription with a dedicated customer.
+
+For payment history, start with an empty cursor and zero snapshot, then retain the
+returned snapshot and pass `next_cursor` until `has_more` is false. Amounts are integer
+minor units and timestamps are UTC RFC3339. The history includes captured cash payments,
+tax-exclusive eligible amounts, successful refunds, and dispute principal withdrawals
+and reinstatements (`reverses_id` links a reinstatement to its withdrawal).
+
+Quarantine items with `reconciliation_reason`; commit a scan only after every page has
+been verified. The snapshot is an event cutoff, not an immutable provider snapshot.
+Rescan from the first page regularly and apply facts idempotently by payment/adjustment
+ID. Zero-cash invoices are omitted from items while still advancing pagination. Currency
+conversion and customer credits require explicit reconciliation; processing and dispute
+fees are excluded from eligible principal. The SDK returns these facts without applying
+credits or reconciling them automatically.
+
+### Setup webhook acknowledgement
+
+The dashboard sends a signed `setup.webhook_test` event with `source: "onboarding"`, `data.message`, and setup metadata. Parse it with the webhook handler, verify its signature using the application webhook secret, then acknowledge it with HTTP 200, 202, or 204. Setup events have onboarding data and do not convert to payment transactions. Event classification alone does not authenticate a request. Invalid signatures must be rejected; no payment lookup or fulfillment is needed for a valid setup test.
+
+The signature uses HMAC-SHA256 over the JSON envelope excluding `security`, preserving envelope field order and Go JSON map ordering and escaping.

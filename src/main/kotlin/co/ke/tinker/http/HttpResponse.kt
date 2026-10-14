@@ -1,7 +1,7 @@
 package co.ke.tinker.http
 
-import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.exception.ExceptionCode
+import co.ke.tinker.exception.InvalidPayloadException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -9,7 +9,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 data class HttpResponse(
     val statusCode: Int,
     val body: String,
-    val headers: Map<String, List<String>>
+    val headers: Map<String, List<String>>,
 ) {
     private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
 
@@ -21,5 +21,3 @@ data class HttpResponse(
         }
     }
 }
-
-

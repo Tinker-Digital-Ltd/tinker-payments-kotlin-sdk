@@ -11,19 +11,18 @@ import co.ke.tinker.model.dto.QueryPaymentRequestDto
 class TransactionManager(
     config: Configuration,
     httpClient: HttpClient,
-    authManager: AuthenticationManager
+    authManager: AuthenticationManager,
 ) : BaseManager(config, httpClient, authManager) {
-    
+
     fun initiate(request: InitiatePaymentRequestDto): Transaction {
         val payload = request.toMap()
         val response = request("POST", Endpoints.PAYMENT_INITIATE_PATH, payload)
         return Transaction(response)
     }
-    
+
     fun query(request: QueryPaymentRequestDto): Transaction {
         val payload = request.toMap()
         val response = request("POST", Endpoints.PAYMENT_QUERY_PATH, payload)
         return Transaction(response)
     }
 }
-

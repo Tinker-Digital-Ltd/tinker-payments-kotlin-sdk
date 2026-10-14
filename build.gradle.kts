@@ -42,7 +42,7 @@ ktlint {
     verbose.set(true)
     android.set(false)
     outputToConsole.set(true)
-    ignoreFailures.set(true)
+    ignoreFailures.set(false)
     enableExperimentalRules.set(false)
     filter {
         exclude("**/generated/**")
@@ -51,7 +51,7 @@ ktlint {
 }
 
 tasks.named("check") {
-    dependsOn("ktlintCheck",)
+    dependsOn("ktlintCheck")
 }
 
 tasks.compileKotlin {

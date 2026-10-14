@@ -4,6 +4,7 @@ import co.ke.tinker.exception.ExceptionCode
 import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.model.Transaction
 import co.ke.tinker.webhook.dto.InvoiceEventDataDto
+import co.ke.tinker.webhook.dto.OnboardingEventDataDto
 import co.ke.tinker.webhook.dto.PaymentEventDataDto
 import co.ke.tinker.webhook.dto.SettlementEventDataDto
 import co.ke.tinker.webhook.dto.SubscriptionEventDataDto
@@ -31,6 +32,11 @@ class WebhookEvent(payload: Map<String, Any?>) {
         security = WebhookSecurity.fromMap(payload["security"] as? Map<String, Any?>)
     }
 
+    val isOnboardingEvent: Boolean get() = source == "onboarding"
+
+    // Verify the signature before acknowledging this test.
+    val isSetupTest: Boolean get() = isOnboardingEvent && type == "setup.webhook_test"
+    val onboardingData: OnboardingEventDataDto? get() = data as? OnboardingEventDataDto
     val isPaymentEvent: Boolean get() = source == "payment"
     val isSubscriptionEvent: Boolean get() = source == "subscription"
     val isInvoiceEvent: Boolean get() = source == "invoice"
@@ -51,6 +57,7 @@ class WebhookEvent(payload: Map<String, Any?>) {
 
     private fun createEventData(data: Map<String, Any?>, source: String?): Any {
         return when (source) {
+            "onboarding" -> OnboardingEventDataDto.fromMap(data)
             "payment" -> PaymentEventDataDto.fromMap(data)
             "subscription" -> SubscriptionEventDataDto.fromMap(data)
             "invoice" -> InvoiceEventDataDto.fromMap(data)

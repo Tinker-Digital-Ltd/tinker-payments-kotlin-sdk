@@ -8,7 +8,7 @@ data class SettlementEventDataDto(
     val currency: String?,
     val settlementDate: String?,
     val createdAt: String?,
-    val processedAt: String?
+    val processedAt: String?,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SettlementEventDataDto {
@@ -33,6 +33,6 @@ data class SettlementEventDataDto(
         "currency" to currency,
         "settlement_date" to settlementDate,
         "created_at" to createdAt,
-        "processed_at" to processedAt
+        "processed_at" to processedAt,
     )
 }

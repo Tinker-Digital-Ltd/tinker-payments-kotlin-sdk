@@ -4,6 +4,7 @@ import co.ke.tinker.auth.AuthenticationManager
 import co.ke.tinker.config.Configuration
 import co.ke.tinker.exception.ApiException
 import co.ke.tinker.exception.ExceptionCode
+import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.http.HttpClient
 import co.ke.tinker.http.HttpResponse
@@ -14,7 +15,7 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 abstract class BaseManager(
     protected val config: Configuration,
     protected val httpClient: HttpClient,
-    protected val authManager: AuthenticationManager
+    protected val authManager: AuthenticationManager,
 ) {
     private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     var lastMeta: ApiMeta? = null
@@ -29,7 +30,7 @@ abstract class BaseManager(
         val headers = mapOf(
             "Authorization" to "Bearer $token",
             "Accept" to "application/json",
-            "Content-Type" to "application/json"
+            "Content-Type" to "application/json",
         )
 
         val body = if (data != null && data.isNotEmpty()) {
@@ -38,23 +39,30 @@ abstract class BaseManager(
             } catch (e: Exception) {
                 throw NetworkException("Failed to serialize request data: ${e.message}", ExceptionCode.NETWORK_ERROR, e)
             }
-        } else null
+        } else {
+            null
+        }
 
         val response: HttpResponse = if (method.uppercase() == "GET") {
             httpClient.get(url, headers)
         } else {
             httpClient.post(url, headers, body)
         }
-        val result = response.getJson()
+        val result = try {
+            response.getJson()
+        } catch (e: InvalidPayloadException) {
+            if (response.statusCode < 400) throw e
+            emptyMap()
+        }
 
         if (response.statusCode >= 400) {
-            throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR)
+            throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
         }
 
         if (result.containsKey("success")) {
             lastMeta = ApiMeta.fromMap(result["meta"] as? Map<String, Any?>)
             if (result["success"] == false) {
-                throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR)
+                throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
             }
 
             val dataObj = result["data"]

@@ -9,4 +9,3 @@ object ExceptionCode {
     const val STREAM_ERROR = 6000
     const val CLIENT_ERROR = 7000
 }
-

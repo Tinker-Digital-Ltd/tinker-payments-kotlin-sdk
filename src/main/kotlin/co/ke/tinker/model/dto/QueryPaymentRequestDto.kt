@@ -4,12 +4,12 @@ import co.ke.tinker.enums.Gateway
 
 data class QueryPaymentRequestDto(
     val paymentReference: String,
-    val gateway: Gateway
+    val gateway: Gateway,
 ) {
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "reference" to paymentReference,
-            "gateway" to gateway.value
+            "gateway" to gateway.value,
         )
     }
 }
