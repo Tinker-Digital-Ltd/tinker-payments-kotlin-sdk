@@ -4,7 +4,7 @@ Kotlin 1.9+ / Java 17+ SDK with automatic authentication, payments, subscription
 
 ## Install and configure
 
-Build from source into your local Maven repository. Keep the checkout directory shown: Gradle derives the artifact name from it.
+Build from source into your local Maven repository:
 
 ```sh
 git clone git@github.com:Tinker-Digital-Ltd/tinker-payments-kotlin-sdk.git tinker-payments-kotlin-sdk

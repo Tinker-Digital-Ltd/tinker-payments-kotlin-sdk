@@ -72,6 +72,7 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            artifactId = "tinker-payments-kotlin-sdk"
 
             pom {
                 name.set("Tinker Payments Kotlin SDK")
@@ -91,9 +92,9 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:git://github.com/tinker/payments-kotlin-sdk.git")
-                    developerConnection.set("scm:git:ssh://github.com/tinker/payments-kotlin-sdk.git")
-                    url.set("https://github.com/tinker/payments-kotlin-sdk")
+                    connection.set("scm:git:git://github.com/Tinker-Digital-Ltd/tinker-payments-kotlin-sdk.git")
+                    developerConnection.set("scm:git:ssh://github.com/Tinker-Digital-Ltd/tinker-payments-kotlin-sdk.git")
+                    url.set("https://github.com/Tinker-Digital-Ltd/tinker-payments-kotlin-sdk")
                 }
             }
         }
@@ -101,9 +102,9 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/tinker/payments-kotlin-sdk")
+            url = uri("https://maven.pkg.github.com/Tinker-Digital-Ltd/tinker-payments-kotlin-sdk")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
                 password = project.findProperty("gpr.token") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
