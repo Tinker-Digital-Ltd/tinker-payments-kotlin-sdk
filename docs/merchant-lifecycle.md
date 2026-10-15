@@ -92,9 +92,3 @@ if (event.isCheckoutCancellationEvent) {
 ```
 
 Refund, withdrawal and cancellation events, including unknown future versions of these event families, never convert to payment transactions. Event classification alone does not authenticate a webhook.
-
-## Contract checks and release gate
-
-The tests exercise the shared `tinker-payments-openapi/fixtures/merchant-lifecycle.json` contract and compare the bundled snapshot when that repository is present. Set `TINKER_LIFECYCLE_FIXTURE` to verify a separate canonical checkout. The signed cancellation fixture is produced by the backend's Go signing convention and tested against tampering.
-
-See [lifecycle release notes](merchant-lifecycle-release-notes.md). Backend deployment, disposable-database integration evidence and deployed sandbox parity are release prerequisites; fixture success alone does not establish them.
