@@ -4,7 +4,7 @@ class ApiException @JvmOverloads constructor(
     message: String,
     val code: Int = ExceptionCode.API_ERROR,
     val httpStatus: Int? = null,
-    details: Map<String, Any?>? = null,
+    val details: Map<String, Any?>? = null,
     headers: Map<String, List<String>> = emptyMap(),
 ) : RuntimeException(message) {
     private val error = details?.get("error") as? Map<*, *> ?: emptyMap<Any, Any>()

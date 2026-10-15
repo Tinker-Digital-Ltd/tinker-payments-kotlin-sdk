@@ -21,7 +21,7 @@ abstract class BaseManager(
     var lastMeta: ApiMeta? = null
         protected set
 
-    protected fun request(method: String, endpoint: String, data: Map<String, Any?>?): Map<String, Any?> {
+    protected fun request(method: String, endpoint: String, data: Map<String, Any?>?, requestHeaders: Map<String, String> = emptyMap()): Map<String, Any?> {
         val baseUrl = config.baseUrl.removeSuffix("/")
         val endpointPath = endpoint.removePrefix("/")
         val url = "$baseUrl/$endpointPath"
@@ -31,7 +31,7 @@ abstract class BaseManager(
             "Authorization" to "Bearer $token",
             "Accept" to "application/json",
             "Content-Type" to "application/json",
-        )
+        ) + requestHeaders
 
         val body = if (data != null && data.isNotEmpty()) {
             try {
