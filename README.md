@@ -88,7 +88,7 @@ And add your GitHub token to `~/.m2/settings.xml`:
 ## Requirements
 
 - Kotlin 1.9+
-- Java 11 or higher
+- Java 17 or higher
 - Gradle or Maven
 
 ## Quick Start
@@ -272,8 +272,6 @@ remains uncertain.
 
 ## Managed recurring billing
 
-Requires a Tinker server with the managed-billing, payment-method and payment-history
-endpoints enabled. Installing the SDK does not deploy or enable those endpoints.
 Existing plan-based subscription methods remain available.
 
 Checkout uses exact integer minor-unit prices (for example, `15000` means EUR 150.00),
@@ -348,3 +346,9 @@ credits or reconciling them automatically.
 The dashboard sends a signed `setup.webhook_test` event with `source: "onboarding"`, `data.message`, and setup metadata. Parse it with the webhook handler, verify its signature using the application webhook secret, then acknowledge it with HTTP 200, 202, or 204. Setup events have onboarding data and do not convert to payment transactions. Event classification alone does not authenticate a request. Invalid signatures must be rejected; no payment lookup or fulfillment is needed for a valid setup test.
 
 The signature uses HMAC-SHA256 over the JSON envelope excluding `security`, preserving envelope field order and Go JSON map ordering and escaping.
+
+## Refunds, withdrawals and checkout cancellation
+
+Use `transactions().refund/refunds/getRefund`, `transactions().cancelCheckout/cancellations/getCancellation` and `payouts().methods/quote/requestPayout/list/get` for merchant lifecycle operations. Every creation requires a stable caller-provided idempotency key. SDK payouts withdraw your merchant balance to your own verified payout account and require the owner's explicit app withdrawal grant. Review/processing/unknown statuses do not confirm money movement or provider cancellation.
+
+See the [typed workflow examples and error/retry guidance](docs/merchant-lifecycle.md) and [unreleased lifecycle notes](docs/merchant-lifecycle-release-notes.md). Signed cancellation updates expose typed cancellation data and never convert into payment transactions.

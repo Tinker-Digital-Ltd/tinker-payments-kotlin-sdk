@@ -2,15 +2,16 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     
     steps:
       - name: Checkout code
@@ -22,30 +23,14 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v4
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/*.gradle', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-      
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        if: hashFiles('gradlew') != ''
-      
-      - name: Setup Gradle Wrapper
-        run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 8.5
-          fi
-      
+          gradle-version: '8.14.3'
+
       - name: Build, lint, and test
-        run: ./gradlew build
-        if: hashFiles('gradlew') != ''
-      
+        run: gradle build
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()

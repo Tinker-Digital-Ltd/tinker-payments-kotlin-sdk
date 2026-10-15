@@ -1,5 +1,6 @@
 package co.ke.tinker
 
+import co.ke.tinker.api.PayoutManager
 import co.ke.tinker.api.SubscriptionManager
 import co.ke.tinker.api.TransactionManager
 import co.ke.tinker.auth.AuthenticationManager
@@ -26,12 +27,17 @@ class Payments(
         SubscriptionManager(config, this.httpClient, authManager)
     }
 
+    private val payoutManager: PayoutManager by lazy {
+        PayoutManager(config, this.httpClient, authManager)
+    }
+
     private val webhookHandler: WebhookHandler by lazy {
         WebhookHandler()
     }
 
     fun transactions(): TransactionManager = transactionsManager
     fun subscriptions(): SubscriptionManager = subscriptionsManager
+    fun payouts(): PayoutManager = payoutManager
     fun webhooks(): WebhookHandler = webhookHandler
     fun getLastAuthMeta(): ApiMeta? = authManager.lastMeta
 }
