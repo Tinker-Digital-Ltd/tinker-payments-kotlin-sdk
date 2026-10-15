@@ -65,6 +65,8 @@ if (cancellations.capability.supported && cancellations.capability.eligible) {
 
 Use the Tinker payment ID. Capability depends on the provider, exact resource and current payment state. Stripe hosted Checkout is supported only when the API reports it eligible. A paid payment needs the refund workflow. Browser redirects and locally blocking a payment never prove provider cancellation.
 
+If `payment_conflict` is true, successful collection conflicts with provider cancellation evidence. The payment remains successful: follow its investigation and use the refund workflow if money must be returned. Cancellation never proves a refund or void.
+
 Cancellation statuses are `requested`, `processing`, `cancelled`, `rejected` and `outcome_unknown`. Only `cancelled` confirms provider evidence. For pending or unknown outcomes, keep the request ID and poll `getCancellation`; Tinker reconciles provider evidence. Do not issue a replacement cancellation to retry an uncertain provider operation. History returns the newest 100 requests with `has_more`; older requests remain available through their ID.
 
 Unsupported requests return `422 CHECKOUT_CANCELLATION_UNSUPPORTED` after recording a rejected request. Lifecycle conflicts return `409 CHECKOUT_CANCELLATION_CONFLICT`. Their structured error details can include `request_id` and `status`; read that request/history to follow its durable outcome. A replay of a rejected request keeps its original 422 or 409 result.

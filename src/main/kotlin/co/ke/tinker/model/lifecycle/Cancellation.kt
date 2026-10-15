@@ -8,6 +8,7 @@ data class Cancellation(
     @JsonProperty("id") val id: String,
     @JsonProperty("payment_id") val paymentId: String,
     @JsonProperty("status") val status: CancellationStatus,
+    @JsonProperty("payment_conflict") val paymentConflict: Boolean = false,
     @JsonProperty("reason") val reason: String,
     @JsonProperty("reason_code") val reasonCode: String,
     @JsonProperty("source") val source: String,
