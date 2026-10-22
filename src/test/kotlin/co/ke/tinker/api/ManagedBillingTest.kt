@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.net.InetSocketAddress
+import java.time.Instant
 
 class ManagedBillingTest {
     private lateinit var server: HttpServer
@@ -106,6 +107,23 @@ class ManagedBillingTest {
         manager.checkout(ManagedCheckout("workspace", "email", "name", "EUR", 15000, 1, "month", "return", "key", trialDays = 14))
         assertEquals(false, (calls[0][2] as Map<*, *>).containsKey("trial_days"))
         assertEquals(14, (calls[1][2] as Map<*, *>)["trial_days"])
+    }
+
+    @Test
+    fun `sends trial end only when set`() {
+        manager.checkout(ManagedCheckout("workspace", "email", "name", "EUR", 15000, 1, "month", "return", "key"))
+        manager.checkout(ManagedCheckout("workspace", "email", "name", "EUR", 15000, 1, "month", "return", "key", trialEnd = Instant.ofEpochSecond(1900000000L)))
+        assertEquals(false, (calls[0][2] as Map<*, *>).containsKey("trial_end"))
+        assertEquals(1900000000L, ((calls[1][2] as Map<*, *>)["trial_end"] as Number).toLong())
+    }
+
+    @Test
+    fun `sends set trial end and end trial operations`() {
+        manager.setTrialEnd("sub/a b", Instant.ofEpochSecond(1900000000L), "trial-key")
+        manager.endTrial("sub/a b", "end-key")
+        val base = "merchant/billing/resources/sub%2Fa%20b"
+        assertEquals(listOf("POST", "$base/trial-end", mapOf("trial_end" to 1900000000, "idempotency_key" to "trial-key")), calls[0])
+        assertEquals(listOf("POST", "$base/end-trial", mapOf("idempotency_key" to "end-key")), calls[1])
     }
 
     @Test

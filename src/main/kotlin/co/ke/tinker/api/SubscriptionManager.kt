@@ -8,6 +8,7 @@ import co.ke.tinker.model.dto.CreateSubscriptionPlanRequestDto
 import co.ke.tinker.model.dto.CreateSubscriptionRequestDto
 import co.ke.tinker.model.dto.ManagedCheckout
 import java.net.URLEncoder
+import java.time.Instant
 
 class SubscriptionManager(
     config: Configuration,
@@ -73,6 +74,14 @@ class SubscriptionManager(
 
     fun setCancelAtRenewal(id: String, cancel: Boolean, key: String): Map<String, Any?> {
         return request("POST", "${billingResourcePath(id)}/cancel", mapOf("cancel" to cancel, "idempotency_key" to key))
+    }
+
+    fun setTrialEnd(id: String, end: Instant, key: String): Map<String, Any?> {
+        return request("POST", "${billingResourcePath(id)}/trial-end", mapOf("trial_end" to end.epochSecond, "idempotency_key" to key))
+    }
+
+    fun endTrial(id: String, key: String): Map<String, Any?> {
+        return request("POST", "${billingResourcePath(id)}/end-trial", mapOf("idempotency_key" to key))
     }
 
     fun billingOperation(key: String): Map<String, Any?> {
