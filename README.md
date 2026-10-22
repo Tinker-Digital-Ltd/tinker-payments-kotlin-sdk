@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.1.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.2.0")
 }
 ```
 
