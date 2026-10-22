@@ -1,6 +1,6 @@
 package co.ke.tinker.webhook.dto
 
-data class SubscriptionEventDataDto(
+data class SubscriptionEventDataDto @JvmOverloads constructor(
     val id: String?,
     val status: String?,
     val planId: String?,
@@ -11,6 +11,8 @@ data class SubscriptionEventDataDto(
     val cancelledAt: String?,
     val pausedAt: String?,
     val reactivatedAt: String?,
+    val billingStatus: String? = null,
+    val trialEndsAt: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SubscriptionEventDataDto {
@@ -24,7 +26,7 @@ data class SubscriptionEventDataDto(
             val cancelledAt = data["cancelled_at"] as? String
             val pausedAt = data["paused_at"] as? String
             val reactivatedAt = data["reactivated_at"] as? String
-            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt)
+            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String)
         }
     }
 
@@ -40,5 +42,7 @@ data class SubscriptionEventDataDto(
         "cancelled_at" to cancelledAt,
         "paused_at" to pausedAt,
         "reactivated_at" to reactivatedAt,
+        "billing_status" to billingStatus,
+        "trial_ends_at" to trialEndsAt,
     )
 }

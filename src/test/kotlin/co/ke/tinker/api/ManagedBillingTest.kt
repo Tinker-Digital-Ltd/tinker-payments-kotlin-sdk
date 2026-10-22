@@ -101,6 +101,14 @@ class ManagedBillingTest {
     }
 
     @Test
+    fun `sends trial days only when positive`() {
+        manager.checkout(ManagedCheckout("workspace", "email", "name", "EUR", 15000, 1, "month", "return", "key"))
+        manager.checkout(ManagedCheckout("workspace", "email", "name", "EUR", 15000, 1, "month", "return", "key", trialDays = 14))
+        assertEquals(false, (calls[0][2] as Map<*, *>).containsKey("trial_days"))
+        assertEquals(14, (calls[1][2] as Map<*, *>)["trial_days"])
+    }
+
+    @Test
     fun `retains recovery metadata for HTTP and envelope failures`() {
         for (responseStatus in listOf(429, 200, 502)) {
             status = responseStatus
