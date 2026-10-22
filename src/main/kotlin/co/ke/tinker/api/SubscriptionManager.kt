@@ -56,6 +56,10 @@ class SubscriptionManager(
         return request("POST", "merchant/billing/checkout", input.toMap())
     }
 
+    fun expireCheckout(id: String, key: String): Map<String, Any?> {
+        return request("POST", "merchant/billing/checkout/${escapePath(id)}/expire", mapOf("idempotency_key" to key))
+    }
+
     fun billingResource(id: String): Map<String, Any?> {
         return request("GET", billingResourcePath(id), null)
     }
