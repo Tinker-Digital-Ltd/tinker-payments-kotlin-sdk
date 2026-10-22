@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.3.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.4.0")
 }
 ```
 
@@ -56,6 +56,7 @@ Checkout uses exact integer minor-unit prices (`15000` = EUR 150.00), a `month` 
 | Method | Purpose |
 |---|---|
 | `checkout` | Create an exact-price recurring checkout |
+| `expireCheckout` | Expire an abandoned open checkout |
 | `billingResource` | Read a managed billing resource |
 | `changeQuantity` | Change the current quantity |
 | `scheduleQuantity` | Schedule a quantity change |
@@ -86,6 +87,16 @@ val operation = billing.billingOperation("quantity-123")
 
 `ManagedCheckout` uses `Long` for minor-unit amounts and `Int` for quantities.
 Cursor and snapshot default to an empty string and zero for the initial page.
+
+### Expiring an abandoned checkout
+
+An abandoned checkout link can still be completed later and create a second subscription. Expire it with a stable idempotency key (16 to 128 characters):
+
+```kotlin
+billing.expireCheckout("checkout-id", "expire-checkout-123456")
+```
+
+An `open` checkout becomes `expired` (`managed_state.status` is `canceled`); an already `expired` checkout is returned unchanged, so retrying is safe. If the checkout was completed, the call fails with HTTP 409 `CHECKOUT_COMPLETED` and `outcome: not_applied`: read the checkout with `billingResource` and use its subscription. A subscription ID returns 400 `INVALID_ID`. An expired checkout sends no `subscription.cancelled` webhook.
 
 ### Trials with a required payment method
 

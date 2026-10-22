@@ -75,6 +75,7 @@ class ManagedBillingTest {
             checkout.toMap(),
         )
         manager.checkout(checkout)
+        manager.expireCheckout("cs/a b", "expire-key-123456")
         manager.billingResource("sub/a b")
         manager.changeQuantity("sub/a b", 4, "change-key")
         manager.scheduleQuantity("sub/a b", 2, "schedule-key")
@@ -87,6 +88,7 @@ class ManagedBillingTest {
         val base = "merchant/billing/resources/sub%2Fa%20b"
         val expected = listOf(
             listOf("POST", "merchant/billing/checkout", mapper.readValue(mapper.writeValueAsString(checkout.toMap()), Map::class.java)),
+            listOf("POST", "merchant/billing/checkout/cs%2Fa%20b/expire", mapOf("idempotency_key" to "expire-key-123456")),
             listOf("GET", base, null),
             listOf("POST", "$base/quantity", mapOf("quantity" to 4, "idempotency_key" to "change-key")),
             listOf("POST", "$base/schedule", mapOf("quantity" to 2, "idempotency_key" to "schedule-key")),
