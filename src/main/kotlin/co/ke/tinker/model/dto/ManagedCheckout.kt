@@ -1,5 +1,7 @@
 package co.ke.tinker.model.dto
 
+import java.time.Instant
+
 /** Exact integer minor-unit prices for managed recurring billing. */
 data class ManagedCheckout @JvmOverloads constructor(
     val externalCustomerId: String,
@@ -12,6 +14,7 @@ data class ManagedCheckout @JvmOverloads constructor(
     val returnUrl: String,
     val idempotencyKey: String,
     val trialDays: Int = 0,
+    val trialEnd: Instant? = null,
 ) {
     fun toMap(): Map<String, Any?> = buildMap {
         put("external_customer_id", externalCustomerId)
@@ -24,5 +27,6 @@ data class ManagedCheckout @JvmOverloads constructor(
         put("return_url", returnUrl)
         put("idempotency_key", idempotencyKey)
         if (trialDays > 0) put("trial_days", trialDays)
+        trialEnd?.let { put("trial_end", it.epochSecond) }
     }
 }

@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.2.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.3.0")
 }
 ```
 
@@ -61,6 +61,8 @@ Checkout uses exact integer minor-unit prices (`15000` = EUR 150.00), a `month` 
 | `scheduleQuantity` | Schedule a quantity change |
 | `clearScheduledQuantity` | Remove a scheduled quantity change |
 | `setCancelAtRenewal` | Set cancellation at renewal; pass false to clear it |
+| `setTrialEnd` | Move the trial end, or the next charge of a paid subscription |
+| `endTrial` | End a trial now and charge the full period |
 | `billingOperation` | Recover the durable result by idempotency key |
 | `paymentMethodPortal` | Create a short-lived hosted payment-method link |
 | `billingPaymentHistory` | Read one page of captured payments and adjustments |
@@ -87,7 +89,9 @@ Cursor and snapshot default to an empty string and zero for the initial page.
 
 ### Trials with a required payment method
 
-Set `trialDays` (1 to 30) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+
+Instead of `trialDays`, pass `trialEnd` (an `Instant` 48 hours to 730 days ahead) for an exact end. It cannot be combined with `trialDays` (HTTP 400). The SDK sends `trial_end` only when it is set.
 
 ```kotlin
 billing.checkout(ManagedCheckout(
@@ -97,6 +101,17 @@ billing.checkout(ManagedCheckout(
     trialDays = 14
 ))
 ```
+
+#### Changing the trial end
+
+`setTrialEnd` moves the trial end earlier or later and must be 1 hour to 730 days ahead. On a paid (`active`) subscription it only accepts a time on or after `current_period_end`; the subscription then becomes `trialing` and nothing is charged. Clear scheduled seat changes first. `endTrial` ends a `trialing` subscription now and charges the full period immediately; if the charge fails the subscription becomes `past_due`. Both return the subscription with `managed_state`. State-dependent rejections come back as 502 `BILLING_GATEWAY_ERROR` with `outcome: not_applied`.
+
+```kotlin
+billing.setTrialEnd("resource-id", Instant.parse("2027-01-15T00:00:00Z"), "trial-end-123")
+billing.endTrial("resource-id", "end-trial-123")
+```
+
+Ending a trial early sends `invoice.paid` and `payment.updated` (not `subscription.renewed`). Extending a paid subscription produces a €0 `invoice.paid`.
 
 Checkout and billing resource responses include a provider-neutral `managed_state` map: `status` (`pending`, `trialing`, `active`, `past_due`, `paused` or `canceled`), `trial_ends_at`, `current_period_end` and `cancel_at_period_end`. Read it instead of raw provider fields; grant access while `status` is `trialing` or `active` and `current_period_end` is in the future. Managed subscription webhooks carry `billing_status` and `trial_ends_at`, and `subscription.trial_will_end` arrives up to three days before the trial ends. The trial's €0 invoice sends `invoice.paid` with amount 0 and is not a payment.
 
