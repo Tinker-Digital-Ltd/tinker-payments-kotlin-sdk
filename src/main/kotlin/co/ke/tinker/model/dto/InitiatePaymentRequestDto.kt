@@ -12,6 +12,7 @@ data class InitiatePaymentRequestDto(
     val customerEmail: String? = null,
     val transactionDesc: String? = null,
     val metadata: Map<String, Any?>? = null,
+    val paymentMethod: String? = null,
 ) {
     fun toMap(): Map<String, Any?> {
         val payload = mutableMapOf<String, Any?>(
@@ -26,6 +27,7 @@ data class InitiatePaymentRequestDto(
         customerEmail?.let { payload["customerEmail"] = it }
         transactionDesc?.let { payload["transactionDesc"] = it }
         metadata?.let { payload["metadata"] = it }
+        paymentMethod?.let { payload["paymentMethod"] = it }
 
         return payload
     }
