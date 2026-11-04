@@ -11,6 +11,7 @@ import co.ke.tinker.model.lifecycle.Cancellation
 import co.ke.tinker.model.lifecycle.CancellationHistory
 import co.ke.tinker.model.lifecycle.CancellationRequest
 import co.ke.tinker.model.lifecycle.CancellationResult
+import co.ke.tinker.model.lifecycle.PaymentCapabilities
 import co.ke.tinker.model.lifecycle.Refund
 import co.ke.tinker.model.lifecycle.RefundHistory
 import co.ke.tinker.model.lifecycle.RefundRequest
@@ -32,6 +33,11 @@ class TransactionManager(
         val payload = request.toMap()
         val response = request("POST", Endpoints.PAYMENT_QUERY_PATH, payload)
         return Transaction(response)
+    }
+
+    fun capabilities(currency: String? = null, country: String? = null): PaymentCapabilities {
+        val query = LifecycleCodec.query(mapOf("currency" to currency, "country" to country).filterValues { it != null })
+        return LifecycleCodec.decode(request("GET", "merchant/payment/capabilities$query", null))
     }
 
     fun refund(paymentId: String, payload: RefundRequest, key: String): RefundResult {

@@ -1,6 +1,6 @@
 package co.ke.tinker.exception
 
-class ApiException @JvmOverloads constructor(
+open class ApiException @JvmOverloads constructor(
     message: String,
     val code: Int = ExceptionCode.API_ERROR,
     val httpStatus: Int? = null,
