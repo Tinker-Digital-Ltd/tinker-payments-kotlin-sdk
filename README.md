@@ -136,7 +136,7 @@ An `open` checkout becomes `expired` (`managed_state.status` is `canceled`); an 
 
 ### Trials with a required payment method
 
-Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `FEATURE_NOT_SUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
 
 Instead of `trialDays`, pass `trialEnd` (an `Instant` 48 hours to 730 days ahead) for an exact end. It cannot be combined with `trialDays` (HTTP 400). The SDK sends `trial_end` only when it is set.
 
