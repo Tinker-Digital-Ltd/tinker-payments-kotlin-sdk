@@ -19,7 +19,13 @@ class PaymentStatusTest {
 
     @Test
     fun testFromStringWithInvalidValue() {
-        assertEquals(PaymentStatus.PENDING, PaymentStatus.fromString("invalid"))
+        assertEquals(PaymentStatus.UNKNOWN, PaymentStatus.fromString("invalid"))
+    }
+
+    @Test
+    fun testCompletedAndReversed() {
+        assertEquals(PaymentStatus.SUCCESS, PaymentStatus.fromString("completed"))
+        assertEquals(PaymentStatus.REVERSED, PaymentStatus.fromString("reversed"))
     }
 
     @Test
