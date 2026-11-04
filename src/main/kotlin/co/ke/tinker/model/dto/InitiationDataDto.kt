@@ -6,6 +6,8 @@ data class InitiationDataDto(
     val paymentReference: String?,
     val status: PaymentStatus,
     val authorizationUrl: String?,
+    val clientSecret: String? = null,
+    val publishableKey: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): InitiationDataDto {
@@ -13,7 +15,9 @@ data class InitiationDataDto(
             val statusValue = data["status"] as? String ?: "pending"
             val status = PaymentStatus.fromString(statusValue)
             val authorizationUrl = (data["authorizationUrl"] ?: data["authorization_url"]) as? String
-            return InitiationDataDto(paymentReference, status, authorizationUrl)
+            val clientSecret = (data["clientSecret"] ?: data["client_secret"]) as? String
+            val publishableKey = (data["publishableKey"] ?: data["publishable_key"]) as? String
+            return InitiationDataDto(paymentReference, status, authorizationUrl, clientSecret, publishableKey)
         }
     }
 
@@ -22,6 +26,8 @@ data class InitiationDataDto(
             "paymentReference" to paymentReference,
             "status" to status.value,
             "authorizationUrl" to authorizationUrl,
+            "clientSecret" to clientSecret,
+            "publishableKey" to publishableKey,
         )
     }
 }

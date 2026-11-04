@@ -47,6 +47,42 @@ val result = client.transactions().query(QueryPaymentRequestDto(
 
 Payments use currency units. Mpesa requires `customerPhone`; `returnUrl` is the browser destination, while webhooks are configured separately in the dashboard. Hosted providers can return an authorization URL through `payment.initiationData?.authorizationUrl`; check for absent initiation data before redirecting.
 
+### Apple Pay / Google Pay
+
+Set `paymentMethod` (`"apple_pay"` or `"google_pay"`) with the Stripe gateway; `customerEmail` is optional. Return `clientSecret` and `publishableKey` from `payment.initiationData` to the browser (`authorizationUrl` is null).
+
+```kotlin
+val payment = client.transactions().initiate(InitiatePaymentRequestDto(
+    amount = 10.0, currency = "USD", gateway = Gateway.STRIPE,
+    merchantReference = "ORDER-12346",
+    returnUrl = "https://merchant.example/payment/return",
+    paymentMethod = "apple_pay",
+))
+val data = payment.initiationData
+```
+
+```html
+<div id="wallet"></div>
+<p id="wallet-error" role="alert"></p>
+<script src="https://js.stripe.com/v3/"></script>
+<script type="module">
+  const { clientSecret, publishableKey } = await fetch("/checkout/wallet", { method: "POST" }).then((r) => r.json());
+  const stripe = Stripe(publishableKey);
+  const elements = stripe.elements({ clientSecret });
+  const wallet = elements.create("expressCheckout", { paymentMethods: { applePay: "always", googlePay: "always" } });
+  wallet.mount("#wallet");
+  wallet.on("confirm", async (event) => {
+    const { error } = await stripe.confirmPayment({ elements, clientSecret, redirect: "if_required", confirmParams: { return_url: location.href } });
+    if (error) {
+      event.paymentFailed({ reason: "fail" });
+      document.querySelector("#wallet-error").textContent = error.message;
+    }
+  });
+</script>
+```
+
+The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
+
 Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `create`, `list` and `cancel`, with DTOs in `co.ke.tinker.model.dto`.
 
 ## Managed recurring billing
