@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.4.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.5.0")
 }
 ```
 
@@ -84,6 +84,22 @@ val data = payment.initiationData
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
 Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `create`, `list` and `cancel`, with DTOs in `co.ke.tinker.model.dto`.
+
+### Any provider and capabilities
+
+`gateway` accepts a `Gateway` constant or any registered provider id string (`gatewayId = "futurepay"`). `Gateway.PESAPAL` is available. List providers, methods and features with `client.transactions().capabilities("KES", "KE")` (both arguments optional).
+
+Statuses are `pending`, `success` (the API's `completed` maps here), `cancelled`, `failed` and `reversed`. An unknown future status becomes `PaymentStatus.UNKNOWN`; read the value as sent from `rawStatus` on `Transaction`, `QueryDataDto` and `InitiationDataDto`.
+
+A request using a feature the provider lacks throws `FeatureNotSupportedException` (an `ApiException`; HTTP 422, code `FEATURE_NOT_SUPPORTED`) with `gateway`, `feature` and `alternatives`.
+
+```kotlin
+try {
+    client.transactions().initiate(request)
+} catch (error: FeatureNotSupportedException) {
+    println("${error.gateway} lacks ${error.feature}; try ${error.alternatives}")
+}
+```
 
 ## Managed recurring billing
 

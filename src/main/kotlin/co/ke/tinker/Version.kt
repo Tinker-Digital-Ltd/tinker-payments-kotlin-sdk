@@ -1,5 +1,5 @@
 package co.ke.tinker
 
 object Version {
-    const val VERSION = "0.4.0"
+    const val VERSION = "0.5.0"
 }
