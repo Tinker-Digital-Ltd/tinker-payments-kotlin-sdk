@@ -34,7 +34,7 @@ class LifecycleTest {
 
     private fun fixture(): JsonNode {
         val snapshot = mapper.readTree(javaClass.getResourceAsStream("/merchant-lifecycle.json"))
-        val canonical = Path.of(System.getenv("TINKER_LIFECYCLE_FIXTURE") ?: "../tinker-payments-openapi/fixtures/merchant-lifecycle.json")
+        val canonical = Path.of(System.getenv("TINKER_LIFECYCLE_FIXTURE") ?: "../../tinker-payments-backend/openapi/fixtures/merchant-lifecycle.json")
         if (Files.exists(canonical)) assertEquals(snapshot, mapper.readTree(canonical.toFile()), "Shared fixture drifted")
         return snapshot
     }
