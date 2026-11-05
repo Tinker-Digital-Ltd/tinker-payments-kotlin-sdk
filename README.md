@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.4.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.5.0")
 }
 ```
 
@@ -49,7 +49,7 @@ Payments use currency units. Mpesa requires `customerPhone`; `returnUrl` is the 
 
 ### Apple Pay / Google Pay
 
-Set `paymentMethod` (`"apple_pay"` or `"google_pay"`) with the Stripe gateway; `customerEmail` is optional. Return `clientSecret` and `publishableKey` from `payment.initiationData` to the browser (`authorizationUrl` is null).
+Set `paymentMethod` (`"apple_pay"` or `"google_pay"`; `"bnpl"`: Klarna on Stripe Checkout) with the Stripe gateway; `customerEmail` is optional. Return `clientSecret` and `publishableKey` from `payment.initiationData` to the browser (`authorizationUrl` is null).
 
 ```kotlin
 val payment = client.transactions().initiate(InitiatePaymentRequestDto(
@@ -84,6 +84,22 @@ val data = payment.initiationData
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
 Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `create`, `list` and `cancel`, with DTOs in `co.ke.tinker.model.dto`.
+
+### Any provider and capabilities
+
+`gateway` accepts a `Gateway` constant or any registered provider id string (`gatewayId = "futurepay"`). `Gateway.PESAPAL` is available. List providers, methods and features with `client.transactions().capabilities("KES", "KE")` (both arguments optional).
+
+Statuses are `pending`, `success` (the API's `completed` maps here), `cancelled`, `failed` and `reversed`. An unknown future status becomes `PaymentStatus.UNKNOWN`; read the value as sent from `rawStatus` on `Transaction`, `QueryDataDto` and `InitiationDataDto`.
+
+A request using a feature the provider lacks throws `FeatureNotSupportedException` (an `ApiException`; HTTP 422, code `FEATURE_NOT_SUPPORTED`) with `gateway`, `feature` and `alternatives`.
+
+```kotlin
+try {
+    client.transactions().initiate(request)
+} catch (error: FeatureNotSupportedException) {
+    println("${error.gateway} lacks ${error.feature}; try ${error.alternatives}")
+}
+```
 
 ## Managed recurring billing
 
@@ -136,7 +152,7 @@ An `open` checkout becomes `expired` (`managed_state.status` is `canceled`); an 
 
 ### Trials with a required payment method
 
-Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `FEATURE_NOT_SUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
 
 Instead of `trialDays`, pass `trialEnd` (an `Instant` 48 hours to 730 days ahead) for an exact end. It cannot be combined with `trialDays` (HTTP 400). The SDK sends `trial_end` only when it is set.
 

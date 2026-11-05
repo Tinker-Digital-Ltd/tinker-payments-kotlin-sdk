@@ -11,11 +11,12 @@ data class QueryDataDto(
     val paidAt: String?,
     val createdAt: String?,
     val channel: String?,
+    val rawStatus: String = status.value,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): QueryDataDto {
             val id = data["id"] as? String
-            val statusValue = data["status"] as? String ?: "pending"
+            val statusValue = PaymentStatus.normalize(data["status"] as? String)
             val status = PaymentStatus.fromString(statusValue)
             val reference = data["reference"] as? String
             val amountObj = data["amount"]
@@ -24,14 +25,14 @@ data class QueryDataDto(
             val paidAt = data["paid_at"] as? String
             val createdAt = data["created_at"] as? String
             val channel = data["channel"] as? String
-            return QueryDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel)
+            return QueryDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel, statusValue)
         }
     }
 
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "id" to id,
-            "status" to status.value,
+            "status" to rawStatus,
             "reference" to reference,
             "amount" to amount,
             "currency" to currency,

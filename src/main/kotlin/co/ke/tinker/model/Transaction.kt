@@ -29,11 +29,12 @@ class Transaction(data: Map<String, Any?>) {
                 initiationData = null
                 queryData = null
                 callbackData = null
-                val statusValue = data["status"] as? String ?: "pending"
-                status = PaymentStatus.fromString(statusValue)
+                status = PaymentStatus.fromString(data["status"] as? String)
             }
         }
     }
+
+    val rawStatus: String = initiationData?.rawStatus ?: queryData?.rawStatus ?: PaymentStatus.normalize(data["status"] as? String)
 
     val isSuccessful: Boolean get() = status == PaymentStatus.SUCCESS
     val isPending: Boolean get() = status == PaymentStatus.PENDING
