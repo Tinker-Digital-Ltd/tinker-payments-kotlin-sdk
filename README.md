@@ -101,6 +101,61 @@ try {
 }
 ```
 
+## Provider examples
+
+Every provider takes the same request. Keys and values are fake.
+
+```kotlin
+import co.ke.tinker.exception.FeatureNotSupportedException
+import co.ke.tinker.model.dto.InitiatePaymentRequestDto
+
+val tx = client.transactions()
+val returnUrl = "https://shop.example/return"
+
+// Redirect (Paystack, Pesapal, PayPal, Flutterwave, DPO, Interswitch, Adyen, Plaid, hosted Stripe):
+// send the customer to payment.initiationData?.authorizationUrl.
+val payment = tx.initiate(InitiatePaymentRequestDto(
+    amount = 2500.0, currency = "NGN", gatewayId = "paystack", merchantReference = "ORDER-1",
+    returnUrl = returnUrl, customerEmail = "jane@example.com",
+))
+
+// Phone approval (M-Pesa, MTN MoMo): no authorizationUrl. The customer approves on their phone
+// and the result arrives as a payment.completed or payment.failed webhook.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 100.0, currency = "KES", gatewayId = "mpesa", merchantReference = "ORDER-2",
+    returnUrl = returnUrl, customerPhone = "+254712345678",
+))
+
+// Klarna (paymentMethod "bnpl" on Stripe or Adyen) is captured at once. Adyen also needs country
+// (AT DK FI DE NO SE CH NL GB US) and that country's currency.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 49.9, currency = "EUR", gatewayId = "adyen", merchantReference = "ORDER-3",
+    returnUrl = returnUrl, customerEmail = "jane@example.com", paymentMethod = "bnpl", country = "DE",
+))
+
+// Plaid (plaid_transfer, plaid_payments): customerName is required.
+// Payment Initiation INITIATED counts as paid.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 40.0, currency = "GBP", gatewayId = "plaid_payments", merchantReference = "ORDER-4",
+    returnUrl = returnUrl, customerEmail = "jane@example.com", customerName = "Jane Doe", country = "GB",
+))
+
+// Ask first, then handle a refusal.
+for (p in tx.capabilities("KES", "KE").providers) {
+    println("${p.gateway} ${p.capabilities["pay_mobile_money"]}")
+}
+try {
+    tx.initiate(InitiatePaymentRequestDto(
+        amount = 100.0, currency = "KES", gatewayId = "mpesa", merchantReference = "ORDER-5",
+        returnUrl = returnUrl, customerPhone = "+254712345678", paymentMethod = "apple_pay",
+    ))
+} catch (error: FeatureNotSupportedException) {
+    println("${error.gateway} ${error.feature} ${error.alternatives.joinToString(",")}") // retry on one of the alternatives
+}
+```
+
+Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
+
 ## Managed recurring billing
 
 Checkout uses exact integer minor-unit prices (`15000` = EUR 150.00), a `month` or `year` interval, and a quantity. The SDK does not convert prices or apply discounts. Responses are unwrapped data maps/objects.
