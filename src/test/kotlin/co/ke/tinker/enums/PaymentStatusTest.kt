@@ -29,6 +29,13 @@ class PaymentStatusTest {
     }
 
     @Test
+    fun testEverySpecStatusParses() {
+        listOf("pending", "authorised", "success", "failed", "blocked", "refunded", "partially_refunded", "cancelled", "expired", "reversed").forEach {
+            assertEquals(it, PaymentStatus.fromString(it).value)
+        }
+    }
+
+    @Test
     fun testValue() {
         assertEquals("pending", PaymentStatus.PENDING.value)
         assertEquals("success", PaymentStatus.SUCCESS.value)

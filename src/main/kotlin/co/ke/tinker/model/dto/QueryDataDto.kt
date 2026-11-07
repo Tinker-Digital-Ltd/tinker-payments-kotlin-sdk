@@ -12,6 +12,7 @@ data class QueryDataDto(
     val createdAt: String?,
     val channel: String?,
     val rawStatus: String = status.value,
+    val country: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): QueryDataDto {
@@ -25,12 +26,12 @@ data class QueryDataDto(
             val paidAt = data["paid_at"] as? String
             val createdAt = data["created_at"] as? String
             val channel = data["channel"] as? String
-            return QueryDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel, statusValue)
+            return QueryDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel, statusValue, data["country"] as? String)
         }
     }
 
     fun toMap(): Map<String, Any?> {
-        return mapOf(
+        return mapOf<String, Any?>(
             "id" to id,
             "status" to rawStatus,
             "reference" to reference,
@@ -39,6 +40,6 @@ data class QueryDataDto(
             "paid_at" to paidAt,
             "created_at" to createdAt,
             "channel" to channel,
-        )
+        ) + listOfNotNull(country?.let { "country" to it })
     }
 }

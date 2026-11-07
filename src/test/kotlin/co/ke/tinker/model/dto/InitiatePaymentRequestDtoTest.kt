@@ -39,4 +39,24 @@ class InitiatePaymentRequestDtoTest {
         val map = dto.toMap()
         assertTrue(map.containsKey("metadata"))
     }
+
+    @Test
+    fun `sends customer name and country only when set and keeps unknown gateways`() {
+        val dto = InitiatePaymentRequestDto(100.0, "EUR", "futurepay", "ORDER-1", "https://example.com/return", customerName = "Ada", country = "DE")
+        assertEquals("Ada", dto.toMap()["customerName"])
+        assertEquals("DE", dto.toMap()["country"])
+        assertEquals("futurepay", dto.gateway)
+        val bare = InitiatePaymentRequestDto(100.0, "EUR", "futurepay", "ORDER-1", "https://example.com/return").toMap()
+        assertFalse(bare.containsKey("customerName"))
+        assertFalse(bare.containsKey("country"))
+    }
+
+    @Test
+    fun `payment data carries country only when sent`() {
+        val data = mapOf<String, Any?>("id" to "1", "status" to "authorised", "reference" to "R")
+        assertEquals("DE", QueryDataDto.fromMap(data + ("country" to "DE")).toMap()["country"])
+        assertFalse(QueryDataDto.fromMap(data).toMap().containsKey("country"))
+        assertEquals("DE", CallbackDataDto.fromMap(data + ("country" to "DE")).country)
+        assertEquals("DE", co.ke.tinker.webhook.dto.PaymentEventDataDto.fromMap(data + ("country" to "DE")).toMap()["country"])
+    }
 }

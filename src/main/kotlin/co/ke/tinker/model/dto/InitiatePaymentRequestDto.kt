@@ -13,6 +13,8 @@ data class InitiatePaymentRequestDto(
     val transactionDesc: String? = null,
     val metadata: Map<String, Any?>? = null,
     val paymentMethod: String? = null,
+    val customerName: String? = null,
+    val country: String? = null,
 ) {
     constructor(
         amount: Double,
@@ -25,9 +27,11 @@ data class InitiatePaymentRequestDto(
         transactionDesc: String? = null,
         metadata: Map<String, Any?>? = null,
         paymentMethod: String? = null,
-    ) : this(amount, currency, gateway.value, merchantReference, returnUrl, customerPhone, customerEmail, transactionDesc, metadata, paymentMethod)
+        customerName: String? = null,
+        country: String? = null,
+    ) : this(amount, currency, gateway.value, merchantReference, returnUrl, customerPhone, customerEmail, transactionDesc, metadata, paymentMethod, customerName, country)
 
-    val gateway: Gateway? get() = Gateway.entries.firstOrNull { it.value == gatewayId }
+    val gateway: String get() = gatewayId
 
     fun toMap(): Map<String, Any?> {
         val payload = mutableMapOf<String, Any?>(
@@ -40,6 +44,8 @@ data class InitiatePaymentRequestDto(
 
         customerPhone?.let { payload["customerPhone"] = it }
         customerEmail?.let { payload["customerEmail"] = it }
+        customerName?.let { payload["customerName"] = it }
+        country?.let { payload["country"] = it }
         transactionDesc?.let { payload["transactionDesc"] = it }
         metadata?.let { payload["metadata"] = it }
         paymentMethod?.let { payload["paymentMethod"] = it }

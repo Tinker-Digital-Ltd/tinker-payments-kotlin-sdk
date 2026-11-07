@@ -83,13 +83,13 @@ val data = payment.initiationData
 
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
-Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `create`, `list` and `cancel`, with DTOs in `co.ke.tinker.model.dto`.
+Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `updatePlan(id, dto)`, `deletePlan(id)`, `create`, `list`, `cancel` and `listInvoices(subscriptionId, page, pageSize)` (all optional), with DTOs in `co.ke.tinker.model.dto`. `InitiatePaymentRequestDto` takes optional `customerName` and `country` (ISO alpha-2), `CreateSubscriptionRequestDto` an optional `country`; `country` is returned on payments and `payment.*` webhooks.
 
 ### Any provider and capabilities
 
-`gateway` accepts a `Gateway` constant or any registered provider id string (`gatewayId = "futurepay"`). `Gateway.PESAPAL` is available. List providers, methods and features with `client.transactions().capabilities("KES", "KE")` (both arguments optional).
+`gateway` accepts a `Gateway` constant or any registered provider id string (`gatewayId = "futurepay"`). `Gateway.PESAPAL` is available. `.gateway` on the request DTOs is the id string (it was `Gateway?`, null for an unknown id). List providers, methods and features with `client.transactions().capabilities("KES", "KE")` (both arguments optional).
 
-Statuses are `pending`, `success` (the API's `completed` maps here), `cancelled`, `failed` and `reversed`. An unknown future status becomes `PaymentStatus.UNKNOWN`; read the value as sent from `rawStatus` on `Transaction`, `QueryDataDto` and `InitiationDataDto`.
+Statuses are `pending`, `authorised`, `success` (the API's `completed` maps here), `failed`, `blocked`, `refunded`, `partially_refunded`, `cancelled`, `expired` and `reversed`. An unknown future status becomes `PaymentStatus.UNKNOWN`; read the value as sent from `rawStatus` on `Transaction`, `QueryDataDto` and `InitiationDataDto`.
 
 A request using a feature the provider lacks throws `FeatureNotSupportedException` (an `ApiException`; HTTP 422, code `FEATURE_NOT_SUPPORTED`) with `gateway`, `feature` and `alternatives`.
 

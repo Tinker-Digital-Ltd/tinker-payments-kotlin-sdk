@@ -44,10 +44,11 @@ abstract class BaseManager(
             null
         }
 
-        val response: HttpResponse = if (method.uppercase() == "GET") {
-            httpClient.get(url, headers)
-        } else {
-            httpClient.post(url, headers, body)
+        val response: HttpResponse = when (method.uppercase()) {
+            "GET" -> httpClient.get(url, headers)
+            "PUT" -> httpClient.put(url, headers, body)
+            "DELETE" -> httpClient.delete(url, headers)
+            else -> httpClient.post(url, headers, body)
         }
         val result = try {
             response.getJson()

@@ -8,7 +8,7 @@ data class QueryPaymentRequestDto(
 ) {
     constructor(paymentReference: String, gateway: Gateway) : this(paymentReference, gateway.value)
 
-    val gateway: Gateway? get() = Gateway.entries.firstOrNull { it.value == gatewayId }
+    val gateway: String get() = gatewayId
 
     fun toMap(): Map<String, Any?> {
         return mapOf(

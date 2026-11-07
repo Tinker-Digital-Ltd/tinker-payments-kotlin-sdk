@@ -2,9 +2,14 @@ package co.ke.tinker.enums
 
 enum class PaymentStatus(val value: String) {
     PENDING("pending"),
+    AUTHORISED("authorised"),
     SUCCESS("success"),
     CANCELLED("cancelled"),
     FAILED("failed"),
+    BLOCKED("blocked"),
+    REFUNDED("refunded"),
+    PARTIALLY_REFUNDED("partially_refunded"),
+    EXPIRED("expired"),
     REVERSED("reversed"),
     UNKNOWN("unknown"),
     ;

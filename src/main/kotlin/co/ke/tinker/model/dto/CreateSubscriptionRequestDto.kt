@@ -6,6 +6,7 @@ data class CreateSubscriptionRequestDto(
     val customer: SubscriptionCustomerDto,
     val paymentMethodId: String? = null,
     val billingPeriod: String? = null,
+    val country: String? = null,
 ) {
     fun toMap(): MutableMap<String, Any?> {
         val map = mutableMapOf<String, Any?>(
@@ -15,6 +16,7 @@ data class CreateSubscriptionRequestDto(
         )
         paymentMethodId?.let { map["payment_method_id"] = it }
         billingPeriod?.let { map["billing_period"] = it }
+        country?.let { map["country"] = it }
         return map
     }
 }

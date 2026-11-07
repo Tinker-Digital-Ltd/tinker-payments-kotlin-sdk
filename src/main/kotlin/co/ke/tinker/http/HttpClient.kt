@@ -23,32 +23,22 @@ class HttpClient {
             .build()
     }
 
-    fun get(url: String, headers: Map<String, String>?): HttpResponse {
+    fun get(url: String, headers: Map<String, String>?): HttpResponse = send("GET", url, headers, null)
+
+    fun post(url: String, headers: Map<String, String>?, body: String?): HttpResponse =
+        send("POST", url, headers, body ?: "")
+
+    fun put(url: String, headers: Map<String, String>?, body: String?): HttpResponse =
+        send("PUT", url, headers, body ?: "")
+
+    fun delete(url: String, headers: Map<String, String>?): HttpResponse = send("DELETE", url, headers, null)
+
+    private fun send(method: String, url: String, headers: Map<String, String>?, body: String?): HttpResponse {
         return try {
-            val requestBuilder = Request.Builder().url(url).get()
+            val requestBody = body?.toRequestBody(if (body.isEmpty()) null else "application/json".toMediaType())
+            val requestBuilder = Request.Builder().url(url).method(method, requestBody)
             headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
-            val request = requestBuilder.build()
-            val response = client.newCall(request).execute()
-
-            val responseHeaders = mutableMapOf<String, List<String>>()
-            response.headers.names().forEach { name ->
-                responseHeaders[name] = response.headers.values(name)
-            }
-
-            val responseBody = response.body?.string() ?: ""
-            HttpResponse(response.code, responseBody, responseHeaders)
-        } catch (e: Exception) {
-            throw NetworkException("Network error: ${e.message}", ExceptionCode.NETWORK_ERROR, e)
-        }
-    }
-
-    fun post(url: String, headers: Map<String, String>?, body: String?): HttpResponse {
-        return try {
-            val requestBody = body?.toRequestBody("application/json".toMediaType()) ?: "".toRequestBody(null)
-            val requestBuilder = Request.Builder().url(url).post(requestBody)
-            headers?.forEach { (key, value) -> requestBuilder.addHeader(key, value) }
-            val request = requestBuilder.build()
-            val response = client.newCall(request).execute()
+            val response = client.newCall(requestBuilder.build()).execute()
 
             val responseHeaders = mutableMapOf<String, List<String>>()
             response.headers.names().forEach { name ->
