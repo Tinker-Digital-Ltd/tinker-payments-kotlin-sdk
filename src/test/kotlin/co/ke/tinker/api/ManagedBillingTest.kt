@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
@@ -63,6 +64,13 @@ class ManagedBillingTest {
     @AfterEach
     fun tearDown() {
         if (::server.isInitialized) server.stop(0)
+    }
+
+    @Test
+    fun `plan features_json is sent only when set`() {
+        assertFalse(CreateSubscriptionPlanRequestDto("Pro", 1.0, "EUR", listOf("monthly")).toMap().containsKey("features_json"))
+        val plan = CreateSubscriptionPlanRequestDto("Pro", 1.0, "EUR", listOf("monthly"), featuresJson = mapOf("seats" to 5))
+        assertEquals(mapOf("seats" to 5), plan.toMap()["features_json"])
     }
 
     @Test
