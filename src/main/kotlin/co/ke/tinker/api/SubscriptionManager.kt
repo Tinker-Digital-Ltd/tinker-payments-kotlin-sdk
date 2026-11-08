@@ -26,6 +26,21 @@ class SubscriptionManager(
         return wrapped["value"] as? List<Map<String, Any?>> ?: emptyList()
     }
 
+    fun updatePlan(planId: String, request: CreateSubscriptionPlanRequestDto): Map<String, Any?> {
+        return request("PUT", planPath(planId), request.toMap())
+    }
+
+    fun deletePlan(planId: String): Map<String, Any?> {
+        return request("DELETE", planPath(planId), null)
+    }
+
+    fun listInvoices(subscriptionId: String? = null, page: Int? = null, pageSize: Int? = null): Map<String, Any?> {
+        val query = listOf("subscription_id" to subscriptionId, "page" to page, "page_size" to pageSize)
+            .filter { it.second != null && it.second.toString().isNotEmpty() }
+            .joinToString("&") { "${it.first}=${URLEncoder.encode(it.second.toString(), Charsets.UTF_8.name())}" }
+        return request("GET", Endpoints.SUBSCRIPTION_INVOICES_PATH + if (query.isEmpty()) "" else "?$query", null)
+    }
+
     fun create(request: CreateSubscriptionRequestDto): Map<String, Any?> {
         return request("POST", Endpoints.SUBSCRIPTION_BASE_PATH, request.toMap())
     }
@@ -104,6 +119,8 @@ class SubscriptionManager(
             if (query.isEmpty()) "" else "?${query.joinToString("&")}"
         return request("GET", endpoint, null)
     }
+
+    private fun planPath(id: String): String = "${Endpoints.SUBSCRIPTION_PLANS_PATH}/${escapePath(id)}"
 
     private fun billingResourcePath(id: String): String = "merchant/billing/resources/${escapePath(id)}"
 

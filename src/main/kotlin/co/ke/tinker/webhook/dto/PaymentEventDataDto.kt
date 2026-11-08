@@ -11,6 +11,7 @@ data class PaymentEventDataDto(
     val channel: String?,
     val createdAt: String?,
     val paidAt: String?,
+    val country: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): PaymentEventDataDto {
@@ -24,7 +25,7 @@ data class PaymentEventDataDto(
             val channel = data["channel"] as? String
             val createdAt = data["created_at"] as? String
             val paidAt = data["paid_at"] as? String
-            return PaymentEventDataDto(id, status, reference, amount, currency, channel, createdAt, paidAt)
+            return PaymentEventDataDto(id, status, reference, amount, currency, channel, createdAt, paidAt, data["country"] as? String)
         }
     }
 
@@ -38,6 +39,6 @@ data class PaymentEventDataDto(
             "channel" to channel,
             "created_at" to createdAt,
             "paid_at" to paidAt,
-        )
+        ) + listOfNotNull(country?.let { "country" to it })
     }
 }

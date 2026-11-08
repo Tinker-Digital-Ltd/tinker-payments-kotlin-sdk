@@ -69,7 +69,7 @@ If `payment_conflict` is true, successful collection conflicts with provider can
 
 Cancellation statuses are `requested`, `processing`, `cancelled`, `rejected` and `outcome_unknown`. Only `cancelled` confirms provider evidence. For pending or unknown outcomes, keep the request ID and poll `getCancellation`; Tinker reconciles provider evidence. Do not issue a replacement cancellation to retry an uncertain provider operation. History returns the newest 100 requests with `has_more`; older requests remain available through their ID.
 
-Unsupported requests return `422 CHECKOUT_CANCELLATION_UNSUPPORTED` after recording a rejected request. Lifecycle conflicts return `409 CHECKOUT_CANCELLATION_CONFLICT`. Their structured error details can include `request_id` and `status`; read that request/history to follow its durable outcome. A replay of a rejected request keeps its original 422 or 409 result.
+Unsupported requests return `422 FEATURE_NOT_SUPPORTED` (`FeatureNotSupportedException`). Lifecycle conflicts return `409 CHECKOUT_CANCELLATION_CONFLICT`. Their structured error details can include `request_id` and `status`; read that request/history to follow its durable outcome. A replay of a rejected request keeps its original 422 or 409 result.
 
 ## Idempotency and errors
 

@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.4.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.5.0")
 }
 ```
 
@@ -49,7 +49,7 @@ Payments use currency units. Mpesa requires `customerPhone`; `returnUrl` is the 
 
 ### Apple Pay / Google Pay
 
-Set `paymentMethod` (`"apple_pay"` or `"google_pay"`) with the Stripe gateway; `customerEmail` is optional. Return `clientSecret` and `publishableKey` from `payment.initiationData` to the browser (`authorizationUrl` is null).
+Set `paymentMethod` (`"apple_pay"` or `"google_pay"`; `"bnpl"`: Klarna on Stripe Checkout) with the Stripe gateway; `customerEmail` is optional. Return `clientSecret` and `publishableKey` from `payment.initiationData` to the browser (`authorizationUrl` is null).
 
 ```kotlin
 val payment = client.transactions().initiate(InitiatePaymentRequestDto(
@@ -83,7 +83,78 @@ val data = payment.initiationData
 
 The result arrives through `payment.*` webhooks. Apple Pay and Google Pay on the web need the checkout domain registered with Stripe.
 
-Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `create`, `list` and `cancel`, with DTOs in `co.ke.tinker.model.dto`.
+Plan subscriptions use `subscriptions().createPlan`, `listPlans`, `updatePlan(id, dto)`, `deletePlan(id)`, `create`, `list`, `cancel` and `listInvoices(subscriptionId, page, pageSize)` (all optional), with DTOs in `co.ke.tinker.model.dto`. `InitiatePaymentRequestDto` takes optional `customerName` and `country` (ISO alpha-2), `CreateSubscriptionRequestDto` an optional `country`; `country` is returned on payments and `payment.*` webhooks.
+
+### Any provider and capabilities
+
+`gateway` accepts a `Gateway` constant or any registered provider id string (`gatewayId = "futurepay"`). `Gateway.PESAPAL` is available. `.gateway` on the request DTOs is the id string (it was `Gateway?`, null for an unknown id). List providers, methods and features with `client.transactions().capabilities("KES", "KE")` (both arguments optional).
+
+Statuses are `pending`, `authorised`, `success` (the API's `completed` maps here), `failed`, `blocked`, `refunded`, `partially_refunded`, `cancelled`, `expired` and `reversed`. An unknown future status becomes `PaymentStatus.UNKNOWN`; read the value as sent from `rawStatus` on `Transaction`, `QueryDataDto` and `InitiationDataDto`.
+
+A request using a feature the provider lacks throws `FeatureNotSupportedException` (an `ApiException`; HTTP 422, code `FEATURE_NOT_SUPPORTED`) with `gateway`, `feature` and `alternatives`.
+
+```kotlin
+try {
+    client.transactions().initiate(request)
+} catch (error: FeatureNotSupportedException) {
+    println("${error.gateway} lacks ${error.feature}; try ${error.alternatives}")
+}
+```
+
+## Provider examples
+
+Every provider takes the same request. Keys and values are fake.
+
+```kotlin
+import co.ke.tinker.exception.FeatureNotSupportedException
+import co.ke.tinker.model.dto.InitiatePaymentRequestDto
+
+val tx = client.transactions()
+val returnUrl = "https://shop.example/return"
+
+// Redirect (Paystack, Pesapal, PayPal, Flutterwave, DPO, Interswitch, Adyen, Plaid, hosted Stripe):
+// send the customer to payment.initiationData?.authorizationUrl.
+val payment = tx.initiate(InitiatePaymentRequestDto(
+    amount = 2500.0, currency = "NGN", gatewayId = "paystack", merchantReference = "ORDER-1",
+    returnUrl = returnUrl, customerEmail = "jane@example.com",
+))
+
+// Phone approval (M-Pesa, MTN MoMo): no authorizationUrl. The customer approves on their phone
+// and the result arrives as a payment.completed or payment.failed webhook.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 100.0, currency = "KES", gatewayId = "mpesa", merchantReference = "ORDER-2",
+    returnUrl = returnUrl, customerPhone = "+254712345678",
+))
+
+// Klarna (paymentMethod "bnpl" on Stripe or Adyen) is captured at once. Adyen also needs country
+// (AT DK FI DE NO SE CH NL GB US) and that country's currency.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 49.9, currency = "EUR", gatewayId = "adyen", merchantReference = "ORDER-3",
+    returnUrl = returnUrl, customerEmail = "jane@example.com", paymentMethod = "bnpl", country = "DE",
+))
+
+// Plaid (plaid_transfer, plaid_payments): customerName is required.
+// Payment Initiation INITIATED counts as paid.
+tx.initiate(InitiatePaymentRequestDto(
+    amount = 40.0, currency = "GBP", gatewayId = "plaid_payments", merchantReference = "ORDER-4",
+    returnUrl = returnUrl, customerEmail = "jane@example.com", customerName = "Jane Doe", country = "GB",
+))
+
+// Ask first, then handle a refusal.
+for (p in tx.capabilities("KES", "KE").providers) {
+    println("${p.gateway} ${p.capabilities["pay_mobile_money"]}")
+}
+try {
+    tx.initiate(InitiatePaymentRequestDto(
+        amount = 100.0, currency = "KES", gatewayId = "mpesa", merchantReference = "ORDER-5",
+        returnUrl = returnUrl, customerPhone = "+254712345678", paymentMethod = "apple_pay",
+    ))
+} catch (error: FeatureNotSupportedException) {
+    println("${error.gateway} ${error.feature} ${error.alternatives.joinToString(",")}") // retry on one of the alternatives
+}
+```
+
+Pay-as-you-go apps use Tinker's provider credentials; your own need a paid plan (HTTP 403 `PAID_PLAN_REQUIRED`).
 
 ## Managed recurring billing
 
@@ -136,7 +207,7 @@ An `open` checkout becomes `expired` (`managed_state.status` is `canceled`); an 
 
 ### Trials with a required payment method
 
-Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `TRIAL_UNSUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
+Set `trialDays` (1 to 730) to collect a card at checkout and charge first when the trial ends. The SDK sends `trial_days` only when it is above 0, so checkouts without a trial keep working against servers released before trial support. A gateway without trial support returns HTTP 422 `FEATURE_NOT_SUPPORTED` with `outcome: not_applied`. Limiting a customer to one trial is the app's responsibility.
 
 Instead of `trialDays`, pass `trialEnd` (an `Instant` 48 hours to 730 days ahead) for an exact end. It cannot be combined with `trialDays` (HTTP 400). The SDK sends `trial_end` only when it is set.
 

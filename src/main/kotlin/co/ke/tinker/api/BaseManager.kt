@@ -4,6 +4,7 @@ import co.ke.tinker.auth.AuthenticationManager
 import co.ke.tinker.config.Configuration
 import co.ke.tinker.exception.ApiException
 import co.ke.tinker.exception.ExceptionCode
+import co.ke.tinker.exception.FeatureNotSupportedException
 import co.ke.tinker.exception.InvalidPayloadException
 import co.ke.tinker.exception.NetworkException
 import co.ke.tinker.http.HttpClient
@@ -43,10 +44,11 @@ abstract class BaseManager(
             null
         }
 
-        val response: HttpResponse = if (method.uppercase() == "GET") {
-            httpClient.get(url, headers)
-        } else {
-            httpClient.post(url, headers, body)
+        val response: HttpResponse = when (method.uppercase()) {
+            "GET" -> httpClient.get(url, headers)
+            "PUT" -> httpClient.put(url, headers, body)
+            "DELETE" -> httpClient.delete(url, headers)
+            else -> httpClient.post(url, headers, body)
         }
         val result = try {
             response.getJson()
@@ -56,13 +58,13 @@ abstract class BaseManager(
         }
 
         if (response.statusCode >= 400) {
-            throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
+            throw apiException(result, response)
         }
 
         if (result.containsKey("success")) {
             lastMeta = ApiMeta.fromMap(result["meta"] as? Map<String, Any?>)
             if (result["success"] == false) {
-                throw ApiException(extractErrorMessage(result), ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
+                throw apiException(result, response)
             }
 
             val dataObj = result["data"]
@@ -73,6 +75,16 @@ abstract class BaseManager(
         }
 
         return result
+    }
+
+    private fun apiException(result: Map<String, Any?>, response: HttpResponse): ApiException {
+        val message = extractErrorMessage(result)
+        val code = (result["error"] as? Map<*, *>)?.get("code")
+        return if (code == "FEATURE_NOT_SUPPORTED") {
+            FeatureNotSupportedException(message, response.statusCode, result, response.headers)
+        } else {
+            ApiException(message, ExceptionCode.API_ERROR, response.statusCode, result, response.headers)
+        }
     }
 
     protected fun extractErrorMessage(result: Map<String, Any?>): String {

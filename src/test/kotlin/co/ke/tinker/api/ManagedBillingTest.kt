@@ -4,11 +4,14 @@ import co.ke.tinker.auth.AuthenticationManager
 import co.ke.tinker.config.Configuration
 import co.ke.tinker.exception.ApiException
 import co.ke.tinker.http.HttpClient
+import co.ke.tinker.model.dto.CreateSubscriptionPlanRequestDto
 import co.ke.tinker.model.dto.ManagedCheckout
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.sun.net.httpserver.HttpServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -61,6 +64,32 @@ class ManagedBillingTest {
     @AfterEach
     fun tearDown() {
         if (::server.isInitialized) server.stop(0)
+    }
+
+    @Test
+    fun `plan features_json is sent only when set`() {
+        assertFalse(CreateSubscriptionPlanRequestDto("Pro", 1.0, "EUR", listOf("monthly")).toMap().containsKey("features_json"))
+        val plan = CreateSubscriptionPlanRequestDto("Pro", 1.0, "EUR", listOf("monthly"), featuresJson = mapOf("seats" to 5))
+        assertEquals(mapOf("seats" to 5), plan.toMap()["features_json"])
+    }
+
+    @Test
+    fun `updates and deletes plans and lists invoices on the spec routes`() {
+        manager.updatePlan("plan/a b", CreateSubscriptionPlanRequestDto("Pro", 10.5, "EUR", listOf("monthly")))
+        manager.deletePlan("plan/a b")
+        manager.listInvoices("sub-1", 2, 50)
+        manager.listInvoices()
+        assertEquals(
+            listOf(
+                listOf("PUT", "merchant/subscriptions/plans/plan%2Fa%20b"),
+                listOf("DELETE", "merchant/subscriptions/plans/plan%2Fa%20b"),
+                listOf("GET", "merchant/subscriptions/invoices?subscription_id=sub-1&page=2&page_size=50"),
+                listOf("GET", "merchant/subscriptions/invoices"),
+            ),
+            calls.map { it.take(2) },
+        )
+        assertEquals("Pro", (calls[0][2] as Map<*, *>)["name"])
+        assertNull(calls[1][2])
     }
 
     @Test

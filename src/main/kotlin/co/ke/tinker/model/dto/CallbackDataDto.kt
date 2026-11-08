@@ -11,6 +11,7 @@ data class CallbackDataDto(
     val paidAt: String?,
     val createdAt: String?,
     val channel: String?,
+    val country: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): CallbackDataDto {
@@ -24,7 +25,7 @@ data class CallbackDataDto(
             val paidAt = data["paid_at"] as? String
             val createdAt = data["created_at"] as? String
             val channel = data["channel"] as? String
-            return CallbackDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel)
+            return CallbackDataDto(id, status, reference, amount, currency, paidAt, createdAt, channel, data["country"] as? String)
         }
     }
 
@@ -38,6 +39,6 @@ data class CallbackDataDto(
             "paid_at" to paidAt,
             "created_at" to createdAt,
             "channel" to channel,
-        )
+        ) + listOfNotNull(country?.let { "country" to it })
     }
 }

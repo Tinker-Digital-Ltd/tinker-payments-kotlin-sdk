@@ -9,6 +9,7 @@ data class PaymentDetail(
     @JsonProperty("status") val status: String,
     @JsonProperty("amount") val amount: Double,
     @JsonProperty("currency") val currency: String,
+    @JsonProperty("country") val country: String? = null,
     @JsonProperty("refundable_amount") val refundableAmount: Double? = null,
     @JsonProperty("refund_capability") val refundCapability: RefundCapability? = null,
     @JsonProperty("refunds") val refunds: List<Refund>? = null,

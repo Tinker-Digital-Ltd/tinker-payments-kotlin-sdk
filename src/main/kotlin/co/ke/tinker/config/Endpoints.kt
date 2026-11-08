@@ -9,4 +9,5 @@ object Endpoints {
     const val PAYMENT_QUERY_PATH = "/merchant/payment/query"
     const val SUBSCRIPTION_BASE_PATH = "/merchant/subscriptions"
     const val SUBSCRIPTION_PLANS_PATH = "/merchant/subscriptions/plans"
+    const val SUBSCRIPTION_INVOICES_PATH = "/merchant/subscriptions/invoices"
 }
