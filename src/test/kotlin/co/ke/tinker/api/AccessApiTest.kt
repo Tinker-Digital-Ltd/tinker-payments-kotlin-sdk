@@ -189,10 +189,11 @@ class AccessApiTest {
                 "id" to "4",
                 "type" to "subscription.billing_issue",
                 "source" to "subscription",
-                "data" to mapOf("subscription_id" to "s1", "product_id" to "plan", "entitlement_ids" to listOf("pro"), "grace_period_expiration_at" to "2026-02-01T00:00:00Z"),
+                "data" to mapOf("subscription_id" to "s1", "product_id" to "plan", "entitlement_ids" to listOf("pro"), "external_customer_id" to "ext1", "grace_period_expiration_at" to "2026-02-01T00:00:00Z"),
             ),
         )
         assertEquals("plan", issue.subscriptionData?.productId)
+        assertEquals("ext1", issue.subscriptionData?.externalCustomerId)
         assertEquals("2026-02-01T00:00:00Z", issue.subscriptionData?.gracePeriodExpirationAt)
     }
 }

@@ -19,6 +19,7 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
     val periodType: String? = null,
     val expirationAt: String? = null,
     val gracePeriodExpirationAt: String? = null,
+    val externalCustomerId: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SubscriptionEventDataDto {
@@ -32,7 +33,7 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
             val cancelledAt = data["cancelled_at"] as? String
             val pausedAt = data["paused_at"] as? String
             val reactivatedAt = data["reactivated_at"] as? String
-            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String, data["product_id"] as? String, (data["entitlement_ids"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(), data["store"] as? String, data["period_type"] as? String, data["expiration_at"] as? String, data["grace_period_expiration_at"] as? String)
+            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String, data["product_id"] as? String, (data["entitlement_ids"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(), data["store"] as? String, data["period_type"] as? String, data["expiration_at"] as? String, data["grace_period_expiration_at"] as? String, data["external_customer_id"] as? String)
         }
     }
 
@@ -42,6 +43,7 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
         "status" to status,
         "plan_id" to planId,
         "account_id" to accountId,
+        "external_customer_id" to externalCustomerId,
         "current_period_start" to currentPeriodStart,
         "current_period_end" to currentPeriodEnd,
         "created_at" to createdAt,
