@@ -12,6 +12,7 @@ import co.ke.tinker.http.HttpResponse
 import co.ke.tinker.model.ApiMeta
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import java.net.URLEncoder
 
 abstract class BaseManager(
     protected val config: Configuration,
@@ -47,6 +48,7 @@ abstract class BaseManager(
         val response: HttpResponse = when (method.uppercase()) {
             "GET" -> httpClient.get(url, headers)
             "PUT" -> httpClient.put(url, headers, body)
+            "PATCH" -> httpClient.patch(url, headers, body)
             "DELETE" -> httpClient.delete(url, headers)
             else -> httpClient.post(url, headers, body)
         }
@@ -76,6 +78,19 @@ abstract class BaseManager(
 
         return result
     }
+
+    @Suppress("UNCHECKED_CAST")
+    protected fun requestList(endpoint: String): List<Map<String, Any?>> =
+        request("GET", endpoint, null)["value"] as? List<Map<String, Any?>> ?: emptyList()
+
+    protected fun withQuery(path: String, vararg params: Pair<String, Any?>): String {
+        val query = params
+            .filter { it.second != null && it.second.toString().isNotEmpty() }
+            .joinToString("&") { "${it.first}=${URLEncoder.encode(it.second.toString(), Charsets.UTF_8.name())}" }
+        return if (query.isEmpty()) path else "$path?$query"
+    }
+
+    protected fun escapePath(value: String): String = URLEncoder.encode(value, Charsets.UTF_8.name()).replace("+", "%20")
 
     private fun apiException(result: Map<String, Any?>, response: HttpResponse): ApiException {
         val message = extractErrorMessage(result)

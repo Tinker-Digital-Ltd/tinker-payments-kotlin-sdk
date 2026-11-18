@@ -241,6 +241,29 @@ For payment history, keep the returned `snapshot` across `next_cursor` pages unt
 
 Quarantine items with `reconciliation_reason` and verify every page before committing a scan. The snapshot is an event cutoff, not an immutable provider snapshot: rescan from the first page to discover later adjustments, then apply facts idempotently by payment/adjustment ID. Zero-cash invoices advance pagination without an item. Processing/dispute fees are excluded from eligible principal; currency conversion and customer credits need explicit reconciliation.
 
+## Customer access, catalogue and experiments
+
+Server-side managers for the customer access API. Responses are maps, lists are `List<Map>`, and path IDs are URL-encoded.
+
+```kotlin
+val access = client.customers().getCustomer("user-42")
+client.customers().getEntitlement("user-42", "pro")
+client.customers().grantPromotionalEntitlement("user-42", "pro", duration = "P7D")
+client.customers().alias("user-42", "\$anonymous:9f2c41")
+client.customers().createToken("user-42", 3600) // short-lived token for client SDKs
+
+client.entitlements().create(mapOf("identifier" to "pro", "display_name" to "Pro"))
+client.entitlements().attachProducts(entitlementId, listOf(productId))
+client.products().create(mapOf("name" to "Day pass", "price" to 5, "currency" to "KES"))
+client.offerings().create(mapOf("identifier" to "default", "is_current" to true))
+client.subscriptions().listRenewalPrompts(subscriptionId)
+client.metrics().get("2026-01-01", "2026-01-31")
+client.experiments().create(mapOf("name" to "Price test", "control_offering_id" to a, "treatment_offering_id" to b))
+client.integrations().put("slack", mapOf("enabled" to true))
+```
+
+`InitiatePaymentRequestDto` accepts `productId`, `externalCustomerId` and `presentedOfferingId`. Webhook events `customer.transferred`, `purchase.completed` and `entitlement.*` parse through `customerData` and `entitlementData`; subscription events carry `productId`, `entitlementIds`, `periodType`, `expirationAt` and `gracePeriodExpirationAt`.
+
 ## Refunds, withdrawals and checkout cancellation
 
 See the [typed workflow guide](docs/merchant-lifecycle.md) for refunds, payout quotes/requests and cancellation capability/history. A payout withdraws your merchant wallet balance to your own verified account and requires the owner's explicit app withdrawal permission. Each creation needs a persisted idempotency key; review, processing and unknown states are not completed money movement or provider cancellation.

@@ -6,6 +6,8 @@ import co.ke.tinker.model.Transaction
 import co.ke.tinker.model.lifecycle.Cancellation
 import co.ke.tinker.model.lifecycle.Payout
 import co.ke.tinker.model.lifecycle.Refund
+import co.ke.tinker.webhook.dto.CustomerEventDataDto
+import co.ke.tinker.webhook.dto.EntitlementEventDataDto
 import co.ke.tinker.webhook.dto.InvoiceEventDataDto
 import co.ke.tinker.webhook.dto.OnboardingEventDataDto
 import co.ke.tinker.webhook.dto.PaymentEventDataDto
@@ -56,11 +58,16 @@ class WebhookEvent(payload: Map<String, Any?>) {
     val withdrawalData: Payout? get() = data as? Payout
     val isPaymentEvent: Boolean get() = source == "payment"
     val isSubscriptionEvent: Boolean get() = source == "subscription"
+    val isCustomerEvent: Boolean get() = source == "customer"
+    val isEntitlementEvent: Boolean get() = source == "entitlement" || isPurchaseCompleted
+    private val isPurchaseCompleted: Boolean get() = source == "payment" && type == "purchase.completed"
     val isInvoiceEvent: Boolean get() = source == "invoice"
     val isSettlementEvent: Boolean get() = source == "settlement"
 
     val paymentData: PaymentEventDataDto? get() = data as? PaymentEventDataDto
     val subscriptionData: SubscriptionEventDataDto? get() = data as? SubscriptionEventDataDto
+    val customerData: CustomerEventDataDto? get() = data as? CustomerEventDataDto
+    val entitlementData: EntitlementEventDataDto? get() = data as? EntitlementEventDataDto
     val invoiceData: InvoiceEventDataDto? get() = data as? InvoiceEventDataDto
     val settlementData: SettlementEventDataDto? get() = data as? SettlementEventDataDto
 
@@ -75,6 +82,7 @@ class WebhookEvent(payload: Map<String, Any?>) {
     private fun createEventData(data: Map<String, Any?>, source: String?): Any {
         // Lifecycle resources and unknown versions stay separate from payment transactions.
         if (source == "payment") {
+            if (type == "purchase.completed") return EntitlementEventDataDto.fromMap(data)
             when (type) {
                 "checkout.cancellation.updated.v1" -> return lifecycleMapper.convertValue<Cancellation>(requireNotNull(data["resource"]))
                 "refund.updated.v1" -> return lifecycleMapper.convertValue<Refund>(requireNotNull(data["resource"]))
@@ -86,6 +94,8 @@ class WebhookEvent(payload: Map<String, Any?>) {
             "onboarding" -> OnboardingEventDataDto.fromMap(data)
             "payment" -> PaymentEventDataDto.fromMap(data)
             "subscription" -> SubscriptionEventDataDto.fromMap(data)
+            "customer" -> CustomerEventDataDto.fromMap(data)
+            "entitlement" -> EntitlementEventDataDto.fromMap(data)
             "invoice" -> InvoiceEventDataDto.fromMap(data)
             "settlement" -> SettlementEventDataDto.fromMap(data)
             else -> throw InvalidPayloadException("Unknown webhook source: $source", ExceptionCode.INVALID_PAYLOAD)

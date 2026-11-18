@@ -15,6 +15,9 @@ data class InitiatePaymentRequestDto(
     val paymentMethod: String? = null,
     val customerName: String? = null,
     val country: String? = null,
+    val productId: String? = null,
+    val externalCustomerId: String? = null,
+    val presentedOfferingId: String? = null,
 ) {
     constructor(
         amount: Double,
@@ -29,7 +32,10 @@ data class InitiatePaymentRequestDto(
         paymentMethod: String? = null,
         customerName: String? = null,
         country: String? = null,
-    ) : this(amount, currency, gateway.value, merchantReference, returnUrl, customerPhone, customerEmail, transactionDesc, metadata, paymentMethod, customerName, country)
+        productId: String? = null,
+        externalCustomerId: String? = null,
+        presentedOfferingId: String? = null,
+    ) : this(amount, currency, gateway.value, merchantReference, returnUrl, customerPhone, customerEmail, transactionDesc, metadata, paymentMethod, customerName, country, productId, externalCustomerId, presentedOfferingId)
 
     val gateway: String get() = gatewayId
 
@@ -49,6 +55,9 @@ data class InitiatePaymentRequestDto(
         transactionDesc?.let { payload["transactionDesc"] = it }
         metadata?.let { payload["metadata"] = it }
         paymentMethod?.let { payload["paymentMethod"] = it }
+        productId?.let { payload["productId"] = it }
+        externalCustomerId?.let { payload["externalCustomerId"] = it }
+        presentedOfferingId?.let { payload["presentedOfferingId"] = it }
 
         return payload
     }

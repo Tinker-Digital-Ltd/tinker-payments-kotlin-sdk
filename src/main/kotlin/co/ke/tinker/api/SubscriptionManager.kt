@@ -67,6 +67,14 @@ class SubscriptionManager(
     fun cancel(subscriptionId: String): Map<String, Any?> {
         return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/$subscriptionId/cancel", null)
     }
+
+    fun listRenewalPrompts(subscriptionId: String? = null): List<Map<String, Any?>> =
+        requestList(withQuery(Endpoints.SUBSCRIPTION_RENEWAL_PROMPTS_PATH, "subscription_id" to subscriptionId))
+
+    fun sendRenewalPrompt(subscriptionId: String): Map<String, Any?> {
+        return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/${escapePath(subscriptionId)}/renewal_prompt", null)
+    }
+
     fun checkout(input: ManagedCheckout): Map<String, Any?> {
         return request("POST", "merchant/billing/checkout", input.toMap())
     }
@@ -123,6 +131,4 @@ class SubscriptionManager(
     private fun planPath(id: String): String = "${Endpoints.SUBSCRIPTION_PLANS_PATH}/${escapePath(id)}"
 
     private fun billingResourcePath(id: String): String = "merchant/billing/resources/${escapePath(id)}"
-
-    private fun escapePath(value: String): String = URLEncoder.encode(value, Charsets.UTF_8.name()).replace("+", "%20")
 }

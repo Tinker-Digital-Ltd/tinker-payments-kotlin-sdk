@@ -31,6 +31,9 @@ class HttpClient {
     fun put(url: String, headers: Map<String, String>?, body: String?): HttpResponse =
         send("PUT", url, headers, body ?: "")
 
+    fun patch(url: String, headers: Map<String, String>?, body: String?): HttpResponse =
+        send("PATCH", url, headers, body ?: "")
+
     fun delete(url: String, headers: Map<String, String>?): HttpResponse = send("DELETE", url, headers, null)
 
     private fun send(method: String, url: String, headers: Map<String, String>?, body: String?): HttpResponse {

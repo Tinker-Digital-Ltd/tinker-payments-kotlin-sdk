@@ -13,6 +13,12 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
     val reactivatedAt: String?,
     val billingStatus: String? = null,
     val trialEndsAt: String? = null,
+    val productId: String? = null,
+    val entitlementIds: List<String> = emptyList(),
+    val store: String? = null,
+    val periodType: String? = null,
+    val expirationAt: String? = null,
+    val gracePeriodExpirationAt: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SubscriptionEventDataDto {
@@ -26,7 +32,7 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
             val cancelledAt = data["cancelled_at"] as? String
             val pausedAt = data["paused_at"] as? String
             val reactivatedAt = data["reactivated_at"] as? String
-            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String)
+            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String, data["product_id"] as? String, (data["entitlement_ids"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(), data["store"] as? String, data["period_type"] as? String, data["expiration_at"] as? String, data["grace_period_expiration_at"] as? String)
         }
     }
 
@@ -44,5 +50,11 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
         "reactivated_at" to reactivatedAt,
         "billing_status" to billingStatus,
         "trial_ends_at" to trialEndsAt,
+        "product_id" to productId,
+        "entitlement_ids" to entitlementIds,
+        "store" to store,
+        "period_type" to periodType,
+        "expiration_at" to expirationAt,
+        "grace_period_expiration_at" to gracePeriodExpirationAt,
     )
 }
