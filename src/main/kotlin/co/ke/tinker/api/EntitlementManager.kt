@@ -17,7 +17,8 @@ class EntitlementManager(
 
     fun get(id: String): Map<String, Any?> = request("GET", path(id), null)
 
-    fun update(id: String, request: Map<String, Any?>): Map<String, Any?> = request("PATCH", path(id), request)
+    fun update(id: String, displayName: String): Map<String, Any?> =
+        request("PATCH", path(id), mapOf("display_name" to displayName))
 
     fun delete(id: String): Map<String, Any?> = request("DELETE", path(id), null)
 

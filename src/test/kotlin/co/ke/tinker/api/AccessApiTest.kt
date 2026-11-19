@@ -91,7 +91,7 @@ class AccessApiTest {
         expect("POST", "merchant/entitlements", mapOf("identifier" to "pro"))
         client.entitlements().get("e1")
         expect("GET", "merchant/entitlements/e1")
-        client.entitlements().update("e1", mapOf("display_name" to "Pro"))
+        client.entitlements().update("e1", "Pro")
         expect("PATCH", "merchant/entitlements/e1", mapOf("display_name" to "Pro"))
         client.entitlements().delete("e1")
         expect("DELETE", "merchant/entitlements/e1")

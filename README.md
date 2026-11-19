@@ -248,9 +248,9 @@ Server-side managers for the customer access API. Responses are maps, lists are 
 ```kotlin
 val access = client.customers().getCustomer("user-42")
 client.customers().getEntitlement("user-42", "pro")
-client.customers().grantPromotionalEntitlement("user-42", "pro", duration = "P7D")
+client.customers().grantPromotionalEntitlement("user-42", "pro", duration = "P7D") // or endTime = RFC3339, mutually exclusive with duration
 client.customers().alias("user-42", "\$anonymous:9f2c41")
-client.customers().createToken("user-42", 3600) // short-lived token for client SDKs
+client.customers().createToken("user-42", 3600) // short-lived token for client SDKs; the app needs a public key first: new apps get one automatically, otherwise 409 PUBLIC_KEY_REQUIRED
 
 client.entitlements().create(mapOf("identifier" to "pro", "display_name" to "Pro"))
 client.entitlements().attachProducts(entitlementId, listOf(productId))
@@ -259,7 +259,7 @@ client.offerings().create(mapOf("identifier" to "default", "is_current" to true)
 client.subscriptions().listRenewalPrompts(subscriptionId)
 client.metrics().get("2026-01-01", "2026-01-31")
 client.experiments().create(mapOf("name" to "Price test", "control_offering_id" to a, "treatment_offering_id" to b))
-client.integrations().put("slack", mapOf("enabled" to true))
+client.integrations().put("slack", mapOf("secret" to webhookUrl, "enabled" to true)) // list, delete, test
 ```
 
 `InitiatePaymentRequestDto` accepts `productId`, `externalCustomerId` and `presentedOfferingId`. Webhook events `customer.transferred`, `purchase.completed` and `entitlement.*` parse through `customerData` and `entitlementData`; subscription events carry `productId`, `entitlementIds`, `periodType`, `expirationAt` and `gracePeriodExpirationAt`.
