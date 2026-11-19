@@ -125,8 +125,8 @@ class AccessApiTest {
 
     @Test
     fun subscriptionRenewalPrompts() {
-        client.subscriptions().listRenewalPrompts("s1")
-        expect("GET", "merchant/subscriptions/renewal_prompts?subscription_id=s1")
+        client.subscriptions().listRenewalPrompts("s1", 2, 50)
+        expect("GET", "merchant/subscriptions/renewal_prompts?subscription_id=s1&page=2&page_size=50")
         client.subscriptions().listRenewalPrompts()
         expect("GET", "merchant/subscriptions/renewal_prompts")
         client.subscriptions().sendRenewalPrompt("s1")
