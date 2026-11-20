@@ -20,6 +20,14 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
     val expirationAt: String? = null,
     val gracePeriodExpirationAt: String? = null,
     val externalCustomerId: String? = null,
+    val cancelReason: String? = null,
+    val expirationReason: String? = null,
+    val environment: String? = null,
+    val presentedOfferingId: String? = null,
+    val transactionId: String? = null,
+    val originalTransactionId: String? = null,
+    val previousProductId: String? = null,
+    val previousExpirationAt: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): SubscriptionEventDataDto {
@@ -33,7 +41,7 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
             val cancelledAt = data["cancelled_at"] as? String
             val pausedAt = data["paused_at"] as? String
             val reactivatedAt = data["reactivated_at"] as? String
-            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String, data["product_id"] as? String, (data["entitlement_ids"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(), data["store"] as? String, data["period_type"] as? String, data["expiration_at"] as? String, data["grace_period_expiration_at"] as? String, data["external_customer_id"] as? String)
+            return SubscriptionEventDataDto(id, status, planId, accountId, currentPeriodStart, currentPeriodEnd, createdAt, cancelledAt, pausedAt, reactivatedAt, data["billing_status"] as? String, data["trial_ends_at"] as? String, data["product_id"] as? String, (data["entitlement_ids"] as? List<*>)?.filterIsInstance<String>() ?: emptyList(), data["store"] as? String, data["period_type"] as? String, data["expiration_at"] as? String, data["grace_period_expiration_at"] as? String, data["external_customer_id"] as? String, data["cancel_reason"] as? String, data["expiration_reason"] as? String, data["environment"] as? String, data["presented_offering_id"] as? String, data["transaction_id"] as? String, data["original_transaction_id"] as? String, data["previous_product_id"] as? String, data["previous_expiration_at"] as? String)
         }
     }
 
@@ -58,5 +66,13 @@ data class SubscriptionEventDataDto @JvmOverloads constructor(
         "period_type" to periodType,
         "expiration_at" to expirationAt,
         "grace_period_expiration_at" to gracePeriodExpirationAt,
+        "cancel_reason" to cancelReason,
+        "expiration_reason" to expirationReason,
+        "environment" to environment,
+        "presented_offering_id" to presentedOfferingId,
+        "transaction_id" to transactionId,
+        "original_transaction_id" to originalTransactionId,
+        "previous_product_id" to previousProductId,
+        "previous_expiration_at" to previousExpirationAt,
     )
 }

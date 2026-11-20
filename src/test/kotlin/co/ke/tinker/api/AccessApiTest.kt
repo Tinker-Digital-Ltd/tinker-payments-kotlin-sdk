@@ -135,6 +135,8 @@ class AccessApiTest {
         expect("GET", "merchant/subscriptions/renewal_prompts")
         client.subscriptions().sendRenewalPrompt("s1")
         expect("POST", "merchant/subscriptions/s1/renewal_prompt")
+        client.subscriptions().uncancel("s1")
+        expect("POST", "merchant/subscriptions/s1/uncancel")
     }
 
     @Test
@@ -199,5 +201,18 @@ class AccessApiTest {
         assertEquals("plan", issue.subscriptionData?.productId)
         assertEquals("ext1", issue.subscriptionData?.externalCustomerId)
         assertEquals("2026-02-01T00:00:00Z", issue.subscriptionData?.gracePeriodExpirationAt)
+
+        val changed = WebhookEvent(
+            mapOf(
+                "id" to "5",
+                "type" to "subscription.product_changed",
+                "source" to "subscription",
+                "data" to mapOf("subscription_id" to "s1", "product_id" to "p2", "previous_product_id" to "p1", "previous_expiration_at" to "x", "cancel_reason" to "UNKNOWN", "environment" to "SANDBOX", "presented_offering_id" to "o", "transaction_id" to "t1", "original_transaction_id" to "t0"),
+            ),
+        )
+        val data = changed.subscriptionData
+        assertEquals(listOf("p1", "x", "UNKNOWN", "SANDBOX", "o", "t1", "t0"), listOf(data?.previousProductId, data?.previousExpirationAt, data?.cancelReason, data?.environment, data?.presentedOfferingId, data?.transactionId, data?.originalTransactionId))
+        assertNull(data?.expirationReason)
+        assertNull(purchase.entitlementData?.environment)
     }
 }

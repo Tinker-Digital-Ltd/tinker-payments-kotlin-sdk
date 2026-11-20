@@ -68,6 +68,10 @@ class SubscriptionManager(
         return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/$subscriptionId/cancel", null)
     }
 
+    fun uncancel(subscriptionId: String): Map<String, Any?> {
+        return request("POST", "${Endpoints.SUBSCRIPTION_BASE_PATH}/$subscriptionId/uncancel", null)
+    }
+
     fun listRenewalPrompts(subscriptionId: String? = null, page: Int? = null, pageSize: Int? = null): Map<String, Any?> =
         request(
             "GET",

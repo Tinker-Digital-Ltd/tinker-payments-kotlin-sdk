@@ -171,6 +171,7 @@ subscriptions.updatePlan("plan_123", CreateSubscriptionPlanRequestDto("Pro", 10.
 subscriptions.deletePlan("plan_123")
 subscriptions.listInvoices("sub_123", 1, 25) // all optional
 subscriptions.cancel(subscription["subscription_id"] as String)
+subscriptions.uncancel(subscription["subscription_id"] as String) // undo a cancellation scheduled for the period end; 409 SUBSCRIPTION_ENDED, SUBSCRIPTION_NOT_SCHEDULED_TO_CANCEL or UNCANCEL_NOT_SUPPORTED
 ```
 
 DTOs are in `co.ke.tinker.model.dto`. `InitiatePaymentRequestDto` takes optional `customerName` and `country` (ISO alpha-2), `CreateSubscriptionRequestDto` an optional `country`; `country` is returned on payments and `payment.*` webhooks.
@@ -295,7 +296,7 @@ client.subscriptions().listRenewalPrompts("sub_123", 1, 25) // same paging and r
 client.subscriptions().sendRenewalPrompt("sub_123")
 ```
 
-`InitiatePaymentRequestDto` accepts `productId`, `externalCustomerId` and `presentedOfferingId`. Webhooks add `subscription.billing_issue`, `customer.transferred`, `purchase.completed`, `entitlement.granted`, `entitlement.revoked` and `entitlement.expired`; read them with `customerData` and `entitlementData`. Subscription events carry `productId`, `entitlementIds`, `periodType`, `expirationAt` and `gracePeriodExpirationAt`.
+`InitiatePaymentRequestDto` accepts `productId`, `externalCustomerId` and `presentedOfferingId`. Webhooks add `subscription.billing_issue`, `subscription.uncancelled`, `subscription.product_changed`, `subscription.extended`, `customer.transferred`, `purchase.completed`, `entitlement.granted`, `entitlement.revoked` and `entitlement.expired`; read them with `customerData` and `entitlementData`. Subscription events carry `productId`, `entitlementIds`, `periodType`, `expirationAt` and `gracePeriodExpirationAt`.
 
 ## Refunds, wallet withdrawals and checkout cancellation
 

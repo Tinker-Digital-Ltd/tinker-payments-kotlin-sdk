@@ -14,6 +14,8 @@ data class EntitlementEventDataDto(
     val expirationAt: String?,
     val presentedOfferingId: String?,
     val revokedAt: String?,
+    val environment: String? = null,
+    val originalTransactionId: String? = null,
 ) {
     companion object {
         fun fromMap(data: Map<String, Any?>): EntitlementEventDataDto = EntitlementEventDataDto(
@@ -30,6 +32,8 @@ data class EntitlementEventDataDto(
             data["expiration_at"] as? String,
             data["presented_offering_id"] as? String,
             data["revoked_at"] as? String,
+            data["environment"] as? String,
+            data["original_transaction_id"] as? String,
         )
     }
 
@@ -47,5 +51,7 @@ data class EntitlementEventDataDto(
         "expiration_at" to expirationAt,
         "presented_offering_id" to presentedOfferingId,
         "revoked_at" to revokedAt,
+        "environment" to environment,
+        "original_transaction_id" to originalTransactionId,
     )
 }
