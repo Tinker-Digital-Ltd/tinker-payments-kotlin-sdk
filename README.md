@@ -17,7 +17,7 @@ Then add to your application's `build.gradle.kts`:
 ```kotlin
 repositories { mavenLocal(); mavenCentral() }
 dependencies {
-    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.5.0")
+    implementation("co.ke.tinker:tinker-payments-kotlin-sdk:0.6.0")
 }
 ```
 
@@ -267,6 +267,7 @@ Server-side access for one-time products and subscriptions, keyed by your own cu
 ```kotlin
 val customers = client.customers()
 val customer = customers.getCustomer("cust_123")
+val page = customers.listCustomers(search = "jane", page = 1, pageSize = 25) // all arguments optional; search is a prefix of the customer ID or email; max 50 per page; returns items (external_customer_id, first_seen, email, phone, active_entitlements), total, page, page_size
 val pro = customers.getEntitlement("cust_123", "pro")
 if (pro["is_active"] == true) { /* grant access */ }
 
@@ -286,7 +287,7 @@ val pro = client.entitlements().create(mapOf("identifier" to "pro", "display_nam
 client.entitlements().attachProducts(pro["id"] as String, listOf(productId)) // also detachProducts, list, get, update, delete
 client.products().create(mapOf("name" to "Credit pack", "price" to 5, "currency" to "USD", "access_period" to "P30D")) // list, get, update
 client.offerings().create(mapOf("identifier" to "default", "is_current" to true, "packages" to listOf(mapOf("identifier" to "monthly", "product_id" to productId)))) // list, get, update, delete
-client.experiments().create(mapOf("name" to "Price test", "control_offering_id" to a, "treatment_offering_id" to b)) // list, get, stop
+client.experiments().create(mapOf("name" to "Price test", "control_offering_id" to a, "treatment_offering_id" to b)) // list, get, stop; control_offering_id and treatment_offering_id are null once an offering is deleted, so read control_offering_identifier and treatment_offering_identifier; result variants carry revenue_by_currency (currency, revenue, purchases)
 client.integrations().put("slack", mapOf("secret" to webhookUrl, "enabled" to true)) // list, delete, test (kind: slack, segment, mixpanel)
 client.metrics().get("2026-01-01", "2026-01-31") // both dates optional
 client.subscriptions().listInvoices("sub_123", 1, 25) // all arguments optional; returns items, total, page, page_size

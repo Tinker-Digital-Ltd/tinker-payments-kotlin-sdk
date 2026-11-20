@@ -60,6 +60,10 @@ class AccessApiTest {
 
     @Test
     fun customers() {
+        client.customers().listCustomers("jo hn", 2, 50)
+        expect("GET", "merchant/customers?search=jo+hn&page=2&page_size=50")
+        client.customers().listCustomers()
+        expect("GET", "merchant/customers")
         client.customers().getCustomer("cus/1")
         expect("GET", "merchant/customers/cus%2F1")
         client.customers().getEntitlement("c1", "pro")

@@ -11,6 +11,9 @@ class CustomerManager(
     authManager: AuthenticationManager,
 ) : BaseManager(config, httpClient, authManager) {
 
+    fun listCustomers(search: String? = null, page: Int? = null, pageSize: Int? = null): Map<String, Any?> =
+        request("GET", withQuery(Endpoints.CUSTOMERS_PATH, "search" to search, "page" to page, "page_size" to pageSize), null)
+
     fun getCustomer(externalCustomerId: String): Map<String, Any?> = request("GET", path(externalCustomerId), null)
 
     fun getEntitlement(externalCustomerId: String, identifier: String): Map<String, Any?> =
